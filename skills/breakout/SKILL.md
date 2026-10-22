@@ -1,6 +1,6 @@
 ---
 name: breakout
-description: Route an idea that surfaced mid-task but does not belong to the current repository into its own new repository and its own agent, without derailing the work in flight. Triggers when the user says something like "wait, separate idea", "this is a different project", "that should be its own repo", "unrelated, but while I think of it", or describes work whose deliverable would not live in this repo's tree. Creates the repo, writes a seed brief, spawns and addresses a second session, then returns to the original task. Do NOT use for work that belongs in this repo — that is an interruption, file it as a task instead. Do NOT use for carrying the current work into a fresh session — that is a handover.
+description: Route an idea that surfaced mid-task but does not belong to the current repository into its own new repository and its own agent, without derailing the work in flight. Triggers when the user says something like "wait, separate idea", "this is a different project", "that should be its own repo", "unrelated, but while I think of it", or describes work whose deliverable would not live in this repo's tree. Creates the repo, writes a founding brief into its a2a/ mailbox, spawns and pings a second session, then returns to the original task. Do NOT use for work that belongs in this repo — that is an interruption, file it as a task instead. Do NOT use for carrying the current work into a fresh session — that is a handover (dead-drop:send with kind handover, or Claude-Hopper). Do NOT use to tell an existing repo's agent something; that is dead-drop:send.
 ---
 
 # breakout
@@ -26,7 +26,7 @@ this repo automates, is still a different repo.
 
 Do not open a discussion. Recognition costs one line.
 
-## 2. Write the seed brief first
+## 2. Write the founding brief first
 
 Before creating anything. Delegate this to a cheap subagent so the main thread does not spend its
 context drafting.
@@ -53,8 +53,13 @@ recorded as a question is useful; one left implicit becomes a wrong assumption.
 New directory in the **narrowest topic group that fits**. A breakout that lands in a junk-drawer
 directory has reproduced the burial problem this skill exists to prevent.
 
-Write the brief to `docs/brief.md` and a short `README.md` stating what the repo is for. Initialise
-git and make one commit. Do not push unless the user asks.
+Write the brief as a dead-drop message, `a2a/YYYY-MM-DD_founding-brief.md`, with `kind: founding`
+and `status: open` in the front matter (format: dead-drop:send, or `docs/protocol.md`), plus the
+`a2a/README.md` and a short `README.md` stating what the repo is for. Initialise git and make one
+commit. Do not push unless the user asks.
+
+Putting the brief in `a2a/` means the new session's SessionStart hook announces it, so the
+receiving agent finds it whether or not your ping lands.
 
 **The directory name is load-bearing.** A session's default peer name derives from its working
 directory's folder name, so naming the directory effectively assigns the address you will message.
@@ -72,8 +77,9 @@ Then:
 1. `ListAgents` — confirm the new session is actually on the roster. Do not send blind.
 2. `SendMessage` it a **pointer, not the payload**:
 
-   > Spawned for a breakout from `<origin repo>`. Your brief is at `docs/brief.md` in your cwd —
-   > read it and start with the first step. You own this repo; nothing comes back to me.
+   > Spawned for a breakout from `<origin repo>`. Your founding brief is at
+   > `a2a/<file>` in your cwd. Handle it with dead-drop:inbox and start with the first step. You own
+   > this repo; nothing comes back to me.
 
 **A message is text and carries no files or history.** That is why the brief is on disk and the
 message points at it. Never try to fit the context into the message body.

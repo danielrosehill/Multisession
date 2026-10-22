@@ -1,179 +1,151 @@
-# Claude-Breakout
+# Claude-Dead-Drop
 
-**Status: v0.1.0 — the pattern is documented and the primitives are verified; the skills have not
-been run in anger.** See [`docs/verification.md`](docs/verification.md) for what is confirmed
-versus inferred.
+Asynchronous messages between Claude Code agents working in different repositories. Agent A writes
+a markdown file into repo B's `a2a/` folder. Agent B finds it when its session starts, or straight
+away if A pings it. B acts on it, sets any reminders it asks for, and writes what it did back into
+the same file.
 
+No server, no broker, no shared meeting place. The target repo's folder is the mailbox.
+
+**Status: v0.3.0, 2026-10-22.** The pattern has been run once end to end, by hand, before it was a
+plugin. The skills are new. See [`docs/verification.md`](docs/verification.md) for what is
+confirmed and what is not.
+
+## Why a file, not a chat
+
+Two agents in two repos rarely need to talk at the same moment. Usually one learns something the
+other will need later:
+
+> The agent in `ASR-Training` starts a training run for a voice model. The agent in
+> `My-Weird-Prompts` is planning an episode that will use it. The first agent knows things the
+> second needs: the run will take about 50 minutes, the model will be published to a **gated**
+> repo, and the second repo's Modal image will therefore need a secret it never needed before.
+
+The workaround that worked, on 2026-10-22: tell agent A to create an `a2a/` folder in repo B and
+write B a message; tell agent B to read it. B acted on it the same minute, added the secret to its
+Modal image, recorded what it did under `## Done`, and left the steps that depended on the
+published model for later.
+
+That is the whole design. This plugin removes the two manual relays (you telling A to write, you
+telling B to read) and adds what the run showed was missing: a fixed format, a way for B to notice
+mail without being told, and a way for A to say "do this at 16:45".
+
+Claude Code's own cross-session `SendMessage` (2.1.224+) is real-time, but a message is text only,
+never files or history, and it reaches only sessions that are running. Here it is the doorbell,
+not the letter.
+
+## How it works
+
+```
+repo A (sender)                                 repo B (reader)
+───────────────                                 ───────────────
+dead-drop:send
+  write B/a2a/2026-10-22_<subject>.md  ───────▶ a2a/2026-10-22_<subject>.md   status: open
+  ListAgents → one peer named b-*?
+     yes → SendMessage "new message in a2a/…" ─▶ arrives mid-session
+     no  → nothing; the file waits             SessionStart hook: "dead-drop: 1 open message"
+                                                dead-drop:inbox
+                                                  act on "What to do"
+                                                  run the readiness check, not the clock
+                                                  schedule: → CronCreate one-shot reminder
+                                                  append "## Done", status: done
+  later: append "## Update" to the same file ─▶ (B reads the update next time)
+```
+
+### The message
+
+```markdown
+---
+kind: request
+subject: Meorav v2 ETA and the gated-repo secret
+from_repo: /home/user/repos/ASR-Training
+from_agent: asr-training-c0
+to_repo: /home/user/repos/My-Weird-Prompts
+written: 2026-10-22T15:10Z
+status: open
+schedule:
+  - at: 2026-10-22T16:45Z
+    do: Run the readiness check. If the model is published, pin its revision and run the smoke test.
 ---
 
-You are twenty minutes into a piece of work. An idea arrives that is good, and is *not this* — not a
-bug in what you are building, not a second feature for the same repo, but a different project that
-happened to occur to you while your hands were somewhere else.
+# Meorav v2 ETA and the gated-repo secret
 
-Two things go wrong by default, and they are both quiet.
+## What you need to know
+## What to do
+## How to tell it is ready
+## Update      ← only the sender writes here
+## Done        ← only the reader writes here
+```
 
-**The agent takes the bait.** You describe the idea, Claude finds it interesting, and the session
-turns toward it. The thing you were actually doing is now half-done and the context that made it
-tractable is gone.
+Full specification, including the lifecycle and why messages are kept rather than deleted:
+[`docs/protocol.md`](docs/protocol.md).
 
-**Or the idea gets absorbed.** Claude keeps working, and files the new idea into the repo it is
-already standing in — a `docs/ideas.md`, a stray directory, a TODO. It is now in the wrong project
-forever. Nobody will look for it there, because it isn't about that.
+### Reminders
 
-The second failure is the expensive one and it is the one nobody notices. An idea filed in the wrong
-repo has not been captured; it has been buried at a findable-looking address.
+The sender often knows when the reader will need to act, but it cannot schedule anything in another
+session. So it asks: a `schedule:` entry with a UTC time and what to do. The reader sets a one-shot
+`CronCreate` job in its own session, converting UTC to local time because cron runs in local time.
+These jobs are session-only, and the skill says so to the user rather than implying the reminder is
+durable.
 
-**Breakout** is the procedure for that moment: the idea gets its own repository, its own agent, and
-its own track — and the session you were already in goes back to what it was doing, uninterrupted.
+### Message kinds
 
-## The pattern in one line
-
-> Recognise that the idea does not belong to this repo → write a seed brief → create the repo →
-> hand it to a second agent → return to the work in flight. The two tracks never converge.
-
-## The decision rule
-
-Everything turns on one question, and it is not "is this related?" — relatedness is a trap, because
-almost everything is related to almost everything.
-
-> **Does the deliverable of this idea belong in this repository's tree?**
-
-If yes, it is a task in this repo. Use [interrupt](#the-family) to file it without derailing.
-
-If no, it is a breakout. It does not matter how conceptually adjacent it is. A CLI that consumes
-this repo's output is still a different repo. A doc about the process this repo automates is still a
-different repo.
-
-The rule exists to serve a prior commitment: **one idea, one repository.** Repos are free. A repo
-that turns out to be a dead end costs nothing and is trivially archived. An idea wedged into a repo
-that was not built to hold it contaminates both — the host repo grows a second purpose, and the
-guest never gets a README that describes it honestly.
-
-## The family
-
-Three patterns, often confused, that split three different things. This is the distinction worth
-internalising:
-
-| | Splits | Tracks afterwards | Tool |
-|---|---|---|---|
-| **interrupt** | work *within* a repo | converge — one sprint, one repo | [interrupt-claude](#interrupt-claude) |
-| **hopper** | time *within* a track | sequential — same work, new session | [Claude-Hopper](https://github.com/danielrosehill/Claude-Hopper) |
-| **breakout** | *tracks* | diverge — permanently, by design | this repo |
-
-- **interrupt** answers *"I noticed a second thing that's broken."* Same repo, same sprint. It is
-  filed as a task and routed linear or parallel-subagent. It comes back.
-- **hopper** answers *"this session is exhausted, carry the context forward."* A handover document
-  moves one track's state across a session boundary. Same work, later.
-- **breakout** answers *"this isn't part of this project at all."* New repo, new agent, no
-  reconvergence. The original session's only remaining involvement is the handoff message.
-
-The seam with `interrupt` is clean and deliberate: interrupt's taxonomy classifies some
-interruptions `out-of-scope` — "file it, explicitly not this sprint." **Breakout is what happens to
-an `out-of-scope` item that deserves its own repository.** It picks up exactly where interrupt puts
-things down.
-
-## Why this is only now possible
-
-Breakout needs an agent-to-agent layer, and until recently there wasn't one.
-
-Claude Code **2.1.224** (7 August 2026) added cross-session `SendMessage` with `ListAgents` to
-discover targets — sessions on any of your machines can now message each other, on macOS and Linux.
-Same-machine sessions talk over a local socket without going through Anthropic's servers.
-
-This changes the shape of the handoff from **pull** to **push**. The prior art (Hopper's
-`sideclaude`, `spawn-planning-repo`) spawns a session and seeds a file: the new agent has to be told
-where to look, and the originating agent cannot follow up. With `SendMessage`, agent one addresses
-agent two by name and keeps a channel open.
-
-**The single most load-bearing constraint** — and the one that determines the whole procedure:
-
-> A message is text. It never carries conversation history or files.
-
-So the message cannot be the handoff. The brief must be on disk, in the new repo, **before** you
-send anything. The message is a pointer, not the payload. Every other design choice below follows
-from that one fact.
-
-Full verified notes on the primitive, including the failure modes:
-[`docs/cross-session-messaging.md`](docs/cross-session-messaging.md).
-
-## The procedure
-
-### 1. Recognise, and do not stall
-
-Apply the decision rule. Do not open a discussion about it — recognition should cost the main thread
-one line, because the whole point is that the work in flight survives.
-
-### 2. Write the seed brief before anything else
-
-The brief is the deliverable of a breakout. Everything else is plumbing.
-
-It must be readable cold by an agent with **no memory of the conversation that produced it** — that
-agent was not there, cannot ask you a follow-up question cheaply, and will confidently invent
-anything you left implicit. The brief carries: what the idea is, why it is not part of the origin
-repo, the first concrete piece of work, and what "done" looks like for a first pass.
-
-A cheap subagent should write it, so the main thread does not spend its context on drafting.
-
-### 3. Create the repo, in the right place
-
-New repo, seeded with the brief. File it in the narrowest topic group that fits — a breakout that
-lands in a junk-drawer directory has reproduced the burial problem it exists to prevent.
-
-Directory name matters more than it looks: **a session's default peer name is its working
-directory's folder name.** Creating the directory effectively assigns the address you will message.
-
-### 4. Hand off
-
-Spawn a session in the new repo — Hopper's `new-claude-at` already does this well — then
-`ListAgents` to confirm it is reachable, and `SendMessage` it a pointer to the brief.
-
-Prefer launching with an explicit `--name`. Two sessions derived from similar folder names collide,
-and a collision means your handoff silently addresses the wrong agent.
-
-### 5. Return
-
-Say one line to the user and go back to the task in flight. The successful outcome of a breakout is
-that the original work was never interrupted.
-
-## What breakout must never be used for
-
-Permission boundaries are **per-session**. If an action was denied in your session, routing it to a
-peer so the peer performs it bypasses the user's decision — cross-session permission laundering.
-Breakout creates a second agent with its own permission context, which makes this a live risk rather
-than a theoretical one. Blocked work goes back to the user, never sideways to a peer.
+| `kind` | Use |
+|---|---|
+| `note` | Information the other agent should have. |
+| `request` | Something the other agent should do. |
+| `founding` | The first brief of a brand-new repo, written by `dead-drop:breakout` when an idea does not belong in the current repo. See [`docs/breakout.md`](docs/breakout.md). |
+| `handover` | To the next session in the *same* repo. For the full session-to-session handover workflow, Claude-Hopper does more. |
 
 ## Skills
 
 | Skill | Side | What it does |
 |---|---|---|
-| `breakout` | emit | Recognise, brief, create the repo, hand off, return to work |
-| `breakout-adopt` | receive | A fresh session in a new repo picks up its seed brief and starts |
+| `dead-drop:send` | A | Write a message into another repo's `a2a/`, ping its session if exactly one is running, append updates later. |
+| `dead-drop:inbox` | B | Read open messages, act on them, set requested reminders, record what was done. Also picks up founding briefs. |
+| `dead-drop:breakout` | A | An idea that needs its own repo: create the repo, write a founding brief into its `a2a/`, spawn and ping a session there, go back to work. |
 
-`breakout-adopt` exists because the receiving end needs a procedure too. An agent that starts in an
-empty repo containing one document, with no idea it was spawned deliberately, will typically ask
-"what would you like to work on?" — wasting the entire handoff.
-
-## Relationship to the prior art
-
-This repo does **not** reimplement session spawning. [Claude-Hopper](https://github.com/danielrosehill/Claude-Hopper)
-already has `new-claude-at`, `sideclaude` and `spawn-planning-repo`, and they work. Breakout
-contributes the decision rule, the brief format, and the push-model handoff that the 2.1.224
-primitives made possible.
-
-There is real overlap with `sideclaude` in particular, and a reasonable person could argue these
-skills belong inside Hopper rather than in their own plugin. See
-[`docs/relationship-to-hopper.md`](docs/relationship-to-hopper.md) for the argument both ways; that
-question is open.
-
-- **interrupt-claude** — companion plugin, same-repo interruption routing. Currently unpublished
-  (local only), so there is no link to give yet.
-- **[Claude-Hopper](https://github.com/danielrosehill/Claude-Hopper)** — session spawning and handover.
-- **[Claude-Code-Plugins](https://github.com/danielrosehill/Claude-Code-Plugins)** — the marketplace.
-  Breakout is not registered there yet.
+Plus `hooks/hooks.json`: a SessionStart hook running `scripts/a2a-inbox.sh`, which lists open
+messages for the repo the session started in and prints nothing when there are none.
 
 ## Install
 
-Not yet published to the marketplace. Clone and install locally.
+From the `danielrosehill` marketplace (`Claude-Code-Plugins`) as `dead-drop`.
+
+Without installing the plugin, the hook still works as a user-level hook. In
+`~/.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear",
+        "hooks": [{ "type": "command", "command": "/path/to/Claude-Dead-Drop/scripts/a2a-inbox.sh", "timeout": 10 }]
+      }
+    ]
+  }
+}
+```
+
+## Rules the skills enforce
+
+- **The sender writes only in the target's `a2a/`** and never commits in the target repo.
+- **No secret values in messages.** Name the secret and where it lives.
+- **No permission laundering.** A message never asks another agent to do what the sender's session
+  was denied. Blocked work goes back to the user.
+- **No guessing the recipient.** If two sessions are open in the target repo, the sender does not
+  ping either. Both would act.
+
+## Prior art
+
+Checked 2026-10-22 ([`docs/prior-art.md`](docs/prior-art.md)). Synchronous message buses for
+Claude Code sessions exist (claude-peers-mcp, MCP Agent Mail, claude-relay, and the author's own
+Agent-Junction and Claude-Agent-Relay-Plugin), as do many same-repo `HANDOFF.md` plugins. Nothing
+found writes into *another* repository's mailbox with no server.
+
+This repo was **Claude-Breakout** (plugin `idea-breakout`) until 2026-10-22. Breakout is now one
+message kind; the old README is [`docs/breakout.md`](docs/breakout.md).
 
 ## License
 
