@@ -114,6 +114,19 @@ permission laundering. Route blocked work back to your user instead.
 Note also that `SendMessage` covers three cases at once — subagents, agent-team teammates, and
 cross-session peers. **Denying the tool removes all three, and takes `ListAgents` with it.**
 
+## Behaviour documented in the tool itself (2.1.308, read 2026-10-22)
+
+Verified from the `SendMessage` tool's own description, not from release notes:
+
+- **`notify_when_idle: true`** (main conversation only) asks a session on the same machine for exactly one `[Cross-session idle notice]` when it next goes idle or exits. Without a message, it's a pure subscription that costs the other session nothing. Use it instead of polling `ListAgents` or sending "are you done?".
+- **Delivered is not read.** A session in a different permission mode holds incoming messages for its user's approval and may let them expire. A session can also refuse them. On the same machine, a `[Cross-session delivery notice]` reports this. Over Remote Control, cloud or Desktop, nothing reports back.
+- Messages arrive as `<cross-session-message from="..." from-name="..." from-mode="...">`. To reply, use the `from` attribute as `to`. On 2026-10-22 the `from` attribute was a socket path (`uds:/run/user/1000/cc-socks/<pid>.sock`) and `from-name` was the peer name.
+- **`@path` attaches nothing** inside a message. Send the text, or a path the receiver opens with its own tools.
+- A subagent's send goes out under its parent session's address, and replies go to the parent.
+- The recipient's user sees only the **first line** as a preview, so make it self-contained.
+
+First real use (2026-10-22): session `github-9e` handed an offline MWP episode to `my-weird-prompts-83` with a research-notes path and "report the job ID back". The receiver ran the skill and messaged back with its progress.
+
 ## Troubleshooting
 
 If `/list-agents` works but a send did not arrive:
@@ -126,6 +139,7 @@ If `/list-agents` works but a send did not arrive:
 | A cloud session is missing from the roster | It appears only while your session is connected to Remote Control |
 | A session on another machine is missing | It must run with Remote Control, *and* yours must be connected |
 | Wrong agent received it | Name collision — two sessions derived the same name from their folder |
+| Receiver says "I don't have that skill" | The sender named a skill the receiving session doesn't have loaded. Skills differ per session, and where they come from a catalogue or a plugin clone rather than an install, the bare name doesn't resolve. Name the source in the message: the catalogue id (`skill:<plugin>/<name>`) or the path to its `SKILL.md`. Seen 2026-10-22: the sender asked for `offline-episode`; the receiver first found only the `offline-script-writer` agent, then found the skill in its local plugin clone and carried on. |
 
 ## Sources
 
