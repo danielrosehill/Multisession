@@ -146,13 +146,22 @@ Without installing the plugin, the hook still works as a user-level hook. In
 
 ## Prior art
 
-Checked 2026-10-22 ([`docs/prior-art.md`](docs/prior-art.md)). Synchronous message buses for
+Checked 2026-10-22 ([`research/2026-10-prior-art.md`](research/2026-10-prior-art.md)). Synchronous message buses for
 Claude Code sessions exist (claude-peers-mcp, MCP Agent Mail, claude-relay, and the author's own
 Agent-Junction and Claude-Agent-Relay-Plugin), as do many same-repo `HANDOFF.md` plugins. Nothing
 found writes into *another* repository's mailbox with no server.
 
-This repo was **Claude-Breakout** (plugin `idea-breakout`) until 2026-10-22. Breakout is now one
-message kind; the old README is [`docs/breakout.md`](docs/breakout.md).
+## Lineage
+
+Fourth iteration of one idea, all in this repo since 2026-10-22
+([`iterations/README.md`](iterations/README.md)):
+
+1. **Agent Junction** (Feb 2026), the first: an encrypted synchronous MCP bus. [`iterations/01-agent-junction/`](iterations/01-agent-junction/)
+2. **Agent Relay** (May 2026): a LAN relay server with file transfer. [`iterations/02-agent-relay/`](iterations/02-agent-relay/)
+3. **Claude-Breakout** (Aug 2026), this repo's former name: idea → new repo over native `SendMessage`. Now the `founding` kind; old README at [`docs/breakout.md`](docs/breakout.md).
+4. **dead-drop** (Oct 2026): the file mailbox.
+
+Research scans, newest first: [`research/`](research/).
 
 ## License
 

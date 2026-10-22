@@ -15,15 +15,18 @@ next in the same project). Listings were read; third-party code was not reviewed
 `SendMessage` / `ListAgents`, since 2.1.224 (2026-08-07). Confirmed working 2026-10-22: `ListAgents`
 in a session at `~/repos/github` listed five interactive peers in other repos. Text only, reaches
 only running sessions, and `ListAgents`' `channel` parameter is "not available in this build".
-dead-drop uses it as the doorbell. Notes: [`cross-session-messaging.md`](cross-session-messaging.md).
+dead-drop uses it as the doorbell. Notes: [`cross-session-messaging.md`](../docs/cross-session-messaging.md).
 
 ## The author's own earlier attempts
 
+All folded into this repo on 2026-10-22 and the original repositories deleted; see
+[`../iterations/README.md`](../iterations/README.md).
+
 | Repo | Date | What | Relation to dead-drop |
 |---|---|---|---|
-| [Agent-Junction](https://github.com/danielrosehill/Agent-Junction) | 2026-02 | npm MCP server, encrypted in-memory bus, read-once messages, localhost or LAN | Synchronous "meeting place". Still the option for non-Claude CLIs. |
-| [Claude-Agent-Relay-Plugin](https://github.com/danielrosehill/Claude-Agent-Relay-Plugin) | 2026-05 | FastMCP + SQLite relay, file attachments, LAN | Cross-machine, server-based. |
-| [Claude-A2A-Research](https://github.com/danielrosehill/Claude-A2A-Research) | 2026-07 | Market scan of Claude↔Claude communication | Recommended claude-peers-mcp (same machine) and MCP Agent Mail (cross-machine). |
+| Agent-Junction → [`iterations/01-agent-junction`](../iterations/01-agent-junction/) | 2026-02 | npm MCP server, encrypted in-memory bus, read-once messages, localhost or LAN | Synchronous "meeting place". Still the option for non-Claude CLIs. |
+| Claude-Agent-Relay-Plugin → [`iterations/02-agent-relay`](../iterations/02-agent-relay/) | 2026-05 | FastMCP + SQLite relay, file attachments, LAN | Cross-machine, server-based. |
+| Claude-A2A-Research → [`2026-07-a2a-market-scan`](2026-07-a2a-market-scan/) | 2026-07 | Market scan of Claude↔Claude communication | Recommended claude-peers-mcp (same machine) and MCP Agent Mail (cross-machine). |
 | Claude-Breakout (this repo, renamed) | 2026-08 | Idea → new repo → new agent, over `SendMessage` | Became the `founding` kind. |
 
 ## Third-party
