@@ -1,6 +1,6 @@
 ---
 name: inbox
-description: Read and act on messages that agents in other repositories left in this repo's a2a/ folder, including setting any reminder a message asks for in this session's own scheduler. Use when the session-start notice says "dead-drop: N open message(s)", when a cross-session message says a file is waiting in a2a/, when the user says "check your a2a", "read the message agent A left", "you've got mail from the other repo", or when a session starts in a new, near-empty repo whose a2a/ holds a founding brief. Do NOT use for messages you are sending; that is dead-drop:send.
+description: Read and act on messages that agents in other repositories left in this repo's a2a/ folder, including setting any reminder a message asks for in this session's own scheduler, and re-reading a living message on the interval it asks for (watch:). Use when the session-start notice says "dead-drop: N open message(s)", when a cross-session message says a file is waiting in a2a/, when the user says "check your a2a", "read the message agent A left", "you've got mail from the other repo", or when a session starts in a new, near-empty repo whose a2a/ holds a founding brief. Do NOT use for messages you are sending; that is dead-drop:send.
 ---
 
 # inbox
@@ -48,6 +48,27 @@ For each `schedule:` entry, set a one-shot reminder in **your own** harness. In 
 exits, the reminder is gone. Say so in one line to the user: "Reminder set for 19:45 local; it
 lasts as long as this session stays open." If you already know the session will not stay open,
 say that instead and leave the reminder to the user. Do not describe it as durable.
+
+## 3b. Keep watching a living message
+
+If the front matter has `watch:` (e.g. `30m`), the sender will keep rewriting this message and
+wants you to re-read it on that interval while it is `open`.
+
+1. `CronCreate`, `recurring: true`, on off-minutes: `30m` → `"7,37 * * * *"`, `15m` →
+   `"4,19,34,49 * * * *"`, `1h` → `"23 * * * *"`.
+2. Prompt (the do-nothing path must be one grep and no output, because every check is a turn):
+   `[dead-drop watch] a2a/<file>: run grep -E '^(revision|status|watch):' on it. If revision is
+   higher than the last "seen r<N>" under ## Done, read the ## Update lines and changed sections,
+   act, and record "seen r<N>". If status is not open or watch is off, CronDelete this job and say
+   so. Otherwise do nothing and say nothing.`
+3. Record the job ID, the interval and `seen r<N>` (the `revision` you just acted on; absent means
+   1) in `## Done`.
+4. Tell the user in one line: "Watching a2a/<file> every 30 min while this session is open; the
+   watch expires after 7 days." Recurring jobs auto-expire after 7 days and die with the session.
+
+Write only to `status` and `## Done`. The sender owns the rest of the file and may rewrite it.
+When you append to `## Done`, re-read the file first so you do not overwrite a revision that landed
+in between.
 
 ## 4. Record what you did
 

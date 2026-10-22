@@ -21,6 +21,8 @@ for f in "$dir"/*.md; do
     subject=$(printf '%s\n' "$fm" | sed -n 's/^subject:[[:space:]]*//p' | head -n1)
     extra=""
     printf '%s\n' "$fm" | grep -q '^schedule:' && extra=", asks you to set a reminder"
+    w=$(printf '%s\n' "$fm" | sed -n 's/^watch:[[:space:]]*//p' | head -n1)
+    [ -n "$w" ] && [ "$w" != off ] && extra="$extra, asks you to re-check it every $w"
     lines+=("  - a2a/$name (${kind:-note}${extra}): $subject")
   else
     lines+=("  - a2a/$name (status unknown, no front matter)")

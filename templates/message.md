@@ -5,7 +5,11 @@ from_repo: <absolute path of your repo>
 from_agent: <your peer name, from ListAgents' "This session is ...">
 to_repo: <absolute path of the target repo>
 written: <YYYY-MM-DDTHH:MMZ, UTC>
+updated: <YYYY-MM-DDTHH:MMZ, UTC; set on every revision>
+revision: 1
 status: open
+# Optional. Ask the reader to re-read this on an interval because you will keep revising it.
+watch: 30m
 # Optional. Delete if you are not asking the reader to set a reminder.
 schedule:
   - at: <YYYY-MM-DDTHH:MMZ, UTC>
@@ -32,7 +36,7 @@ does not act on the ETA alone. Delete if nothing is pending. -->
 
 ## Update
 
-(The sender appends dated updates here.)
+(The sender adds one line per revision, newest first: `r2, 15:40Z: what changed`.)
 
 ## Done
 

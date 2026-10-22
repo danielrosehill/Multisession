@@ -7,7 +7,7 @@ the same file.
 
 No server, no broker, no shared meeting place. The target repo's folder is the mailbox.
 
-**Status: v0.3.0, 2026-10-22.** The pattern has been run once end to end, by hand, before it was a
+**Status: v0.4.0, 2026-10-22.** The pattern has been run once end to end, by hand, before it was a
 plugin. The skills are new. See [`docs/verification.md`](docs/verification.md) for what is
 confirmed and what is not.
 
@@ -87,6 +87,13 @@ session. So it asks: a `schedule:` entry with a UTC time and what to do. The rea
 `CronCreate` job in its own session, converting UTC to local time because cron runs in local time.
 These jobs are session-only, and the skill says so to the user rather than implying the reminder is
 durable.
+
+### Living messages
+
+For a long task, the sender adds `watch: 30m` and keeps **one** message current, rewriting it and
+bumping `revision:` as things change. The reader sets a recurring check that greps the revision and
+does nothing unless it moved. A ping on each revision is the fast path; the watch is the fallback.
+Recurring checks expire after 7 days and live only in the reader's session.
 
 ### Message kinds
 

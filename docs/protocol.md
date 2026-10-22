@@ -30,7 +30,10 @@ from_repo: /home/user/repos/ASR-Training
 from_agent: asr-training-c0
 to_repo: /home/user/repos/My-Weird-Prompts
 written: 2026-10-22T15:10Z
+updated: 2026-10-22T15:40Z
+revision: 2
 status: open
+watch: 30m
 schedule:
   - at: 2026-10-22T16:45Z
     do: Check whether the model is published (see "How to tell it is ready"). If it is, do steps 1 and 3.
@@ -53,7 +56,10 @@ schedule:
 | `from_agent` | no | The sender's peer name, as `ListAgents` prints it ("This session is …"). Lets the reader reply by `SendMessage` while the sender is still running. |
 | `to_repo` | yes | Absolute path of the target repo. Lets a misplaced file be noticed. |
 | `written` | yes | UTC, `YYYY-MM-DDTHH:MMZ`. |
+| `updated` | no | UTC time of the latest revision. Absent means never revised. |
+| `revision` | no | Integer, starts at 1. The sender bumps it on **every** change to the file. The reader compares it to the last revision it acted on. Absent means 1. |
 | `status` | yes | `open` → `done`, or `withdrawn` by the sender. |
+| `watch` | no | `15m`, `30m`, `1h`, … The sender asks the reader to re-read this message on that interval while it is `open`, because the sender will keep revising it. `off` (or absent) means no polling. See "Living messages" below. |
 | `schedule` | no | Reminders the **reader** sets in its own harness. Each has `at` (UTC) and `do` (the prompt the reader should run then). See below. |
 | `reply_to` | no | Filename of the message this answers, when replying in the other repo's `a2a/`. |
 
@@ -63,8 +69,10 @@ schedule:
 - **What to do**: numbered steps the reader can act on cold.
 - **How to tell it is ready**: a check of the thing itself, for anything time-dependent. An ETA
   is an estimate; the reader runs the check and does not go by the clock alone.
-- **Update**: only the sender writes here, one dated entry per update. The thread stays in one
-  file; the sender does not start a new file on the same subject.
+- **Update**: only the sender writes here: one line per revision, newest first, saying what
+  changed (`r3, 16:20Z: ETA moved to 17:00; secret renamed`). The reader uses it to see what is new
+  without diffing. The thread stays in one file; the sender does not start a new file on the same
+  subject.
 - **Done**: only the reader writes here: the date, what it did, and any reminder it set.
 
 ## Lifecycle
@@ -107,6 +115,49 @@ On the reader's side (Claude Code, verified 2026-10-22 from the `CronCreate` too
   it says so instead of pretending the reminder is durable.
 - After scheduling, read back the actual next fire time from the tool result or `CronList`; the
   scheduler can shift a job by up to about 90 s.
+
+## Living messages (`watch`)
+
+Some tasks run for hours and the sender learns more as they go: the ETA moves, a path changes, a
+step is no longer needed. Rather than stack updates, the sender keeps **one message current** and
+rewrites it, and the reader re-reads it on an interval.
+
+**Ownership.** The sender owns the front matter except `status`, and every section except
+`## Done`. It may rewrite those freely, so the body always states the current picture rather than
+a history. The reader owns `status` and `## Done`.
+
+**Sender, on each revision:**
+
+1. Re-read the file **immediately before writing**, and write from that copy, never from one held
+   since earlier. The reader may have appended to `## Done` in between, and a stale rewrite would
+   erase it.
+2. Rewrite what changed. Keep `## Done` exactly as found.
+3. Bump `revision`, set `updated`, add one line to `## Update` naming what changed.
+4. Ping the reader if exactly one session matches (see below). The ping is immediate; `watch` is
+   the fallback for when no ping is possible or it is missed.
+5. When the task is over, set `watch: off`, or `status: withdrawn` if the message no longer applies.
+
+**Reader, when it first handles a message with `watch`:**
+
+1. Set a **recurring** `CronCreate` job on that interval, on off-minutes (`30m` →
+   `"7,37 * * * *"`, `1h` → `"23 * * * *"`).
+2. The prompt does the cheap check first and stops there if nothing changed:
+   `[dead-drop watch] a2a/<file>: run grep -E '^(revision|status|watch):' on it. If revision is
+   higher than the last one recorded under ## Done, read the ## Update lines and the changed
+   sections, act, and record "seen r<N>". If status is not open or watch is off, CronDelete this job
+   and say so. Otherwise do nothing and say nothing.`
+3. Record in `## Done`: the job ID, the interval, and `seen r<N>` for the revision acted on. That
+   line is how the next check knows what is new.
+
+Every check is a full model turn, so the do-nothing path must be one `grep` and no output. That is
+also why the reader, not the sender, chooses minute offsets: sessions polling on `:00` and `:30`
+all land at once.
+
+**Limits (verified from the `CronCreate` schema, 2026-10-22):** jobs live only in the reader's
+session, fire only while it is idle, and a recurring job can run up to half its interval late.
+**Recurring jobs expire after 7 days.** A watch on a task longer than that has to be re-armed, and
+the reader says so when it sets one. `Monitor` is not a substitute: monitors expire after at most
+30 minutes and need re-arming.
 
 ## Push notification by peer name
 

@@ -30,6 +30,8 @@ a later reader knows which claims to lean on.
 - **`hooks/hooks.json` inside an installed plugin** has not run. The user-level hook uses the same
   script.
 - **A `schedule:` reminder has not fired end to end** (reader sets it, session idles, prompt runs).
+- **A `watch:` loop has not run.** Untested: whether the do-nothing check really stays silent and
+  cheap, and whether sender rewrites and reader `## Done` appends ever collide in practice.
 - **The peer-name prefix match** breaks for folders whose names normalise to the same prefix as
   another (e.g. `Foo` and `Foo-Bar`). The skill only sends on a single unambiguous match.
 

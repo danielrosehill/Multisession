@@ -1,6 +1,6 @@
 ---
 name: send
-description: Leave a message for the Claude agent working in another repository, by writing a markdown file into that repo's a2a/ folder, and ping it by SendMessage if it is running. Use when something you learned or did here affects work in another repo (an ETA, a new secret it needs, a changed path, a model about to be published), when the user says "tell the agent in X", "let the other repo know", "leave a note for agent B", "drop a message in X's a2a", or when the other agent should set a reminder for a later time. Also the transport for a breakout's founding brief and for a same-repo handover. Do NOT use to get a peer to do something this session was denied permission to do.
+description: Leave a message for the Claude agent working in another repository, by writing a markdown file into that repo's a2a/ folder, and ping it by SendMessage if it is running. Use when something you learned or did here affects work in another repo (an ETA, a new secret it needs, a changed path, a model about to be published), when the user says "tell the agent in X", "let the other repo know", "leave a note for agent B", "drop a message in X's a2a", or when the other agent should set a reminder for a later time. Also for a living message the other agent re-reads every N minutes while you keep it current over a long task, and the transport for a breakout's founding brief and for a same-repo handover. Do NOT use to get a peer to do something this session was denied permission to do.
 ---
 
 # send
@@ -35,7 +35,10 @@ from_repo: <absolute path of this repo>
 from_agent: <your peer name: ListAgents prints "This session is <name>">
 to_repo: <absolute path of the target repo>
 written: <YYYY-MM-DDTHH:MMZ>   # UTC
+updated: <YYYY-MM-DDTHH:MMZ>   # UTC, on every revision
+revision: 1           # bump on every change
 status: open
+watch: 30m            # optional: the reader re-reads on this interval while open; omit if not revising
 schedule:             # optional: reminders for the reader to set; omit if none
   - at: <YYYY-MM-DDTHH:MMZ>    # UTC
     do: <what to do then, readable cold>
@@ -71,6 +74,13 @@ your estimate, not on it.
 You cannot schedule anything in B's session yourself. B does that when it reads the message
 (`dead-drop:inbox`).
 
+### Asking B to keep watching (a living message)
+
+When your task runs for a while and you will keep learning things B needs (the ETA moves, a path
+changes, a step is dropped), add `watch: 30m` (or `15m`, `1h`). B then re-reads the message on
+that interval while it is `open`, and you keep **one** message current instead of sending many.
+Choose the longest interval B can tolerate: every check costs B a model turn.
+
 ## 3. Ping B if it is running
 
 Run `ListAgents`. Peer names are the folder name, lowercased, plus a short suffix
@@ -88,11 +98,19 @@ Run `ListAgents`. Peer names are the folder name, lowercased, plus a short suffi
 
 Then carry on with your own work. Do not wait for a reply unless your next step depends on it.
 
-## Later
+## Later: revising the message
 
-When your side changes (the model published, the ETA slipped), append a dated entry to the same
-file's `## Update` and ping again if B is running. If the message no longer applies, set
-`status: withdrawn` and say why under `## Update`.
+When your side changes (the model published, the ETA slipped):
+
+1. **Re-read the file now** and edit that copy. B may have written to `## Done` since you last
+   looked; rewriting from an old copy erases it.
+2. Rewrite the sections that changed so the body states the current picture. You own everything
+   except `status` and `## Done`; leave `## Done` exactly as you found it.
+3. Bump `revision`, set `updated`, add one line to `## Update`: `r3, 16:20Z: ETA now 17:00`.
+4. Ping B again if exactly one session matches. Pings are immediate; `watch` is the fallback.
+
+When your task is over, set `watch: off` so B stops checking. If the message no longer applies,
+set `status: withdrawn` and say why under `## Update`.
 
 ## Hard limits
 
