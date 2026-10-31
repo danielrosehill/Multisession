@@ -129,11 +129,11 @@ its JSON:
 
 - `"closed":"scheduled"`: write the one-line report below, then end your turn.
   If `trap_in_bashrc` is `false`, add that the pane will close with a "crashed" banner left
-  behind, and that `scripts/install-close-trap.sh` fixes it for new panes.
+  behind, and that `scripts/install-shell-hooks.sh` fixes it for new panes.
 - `"closed":false`: not in Konsole, or tmux/ssh in between. Say the handover is done and the
   user should close this pane themselves.
 
-Before installing anything on the user's behalf: `install-close-trap.sh` appends one guarded line
+Before installing anything on the user's behalf: `install-shell-hooks.sh` appends one guarded line
 to `~/.bashrc`. Offer it; don't run it unasked.
 
 ## 5. Report

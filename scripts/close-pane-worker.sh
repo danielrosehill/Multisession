@@ -6,7 +6,7 @@
 # Konsole closes a pane only when its process exits cleanly. A shell killed by a signal leaves
 # the pane open with "Warning: Program '...' crashed." (seen in testing, Konsole 25.12.3). So:
 # stop Claude, then, once the shell is idle at its prompt (foregroundProcessId == shell), create a
-# flag file and send SIGALRM, which the shell-rc trap (shell/multisession-close-trap.sh) turns into
+# flag file and send SIGALRM, which the shell-rc trap (shell/multisession-rc.sh) turns into
 # a clean exit 0. Session.sendText
 # would be the obvious route but Konsole refuses it by default ("Security sensitive DBus API is
 # disabled in the settings"), and Konsole exports no close-session action over D-Bus.
@@ -19,7 +19,7 @@ if [ -n "$CPID" ] && [ "$CPID" != "$SHELLPID" ]; then
   for i in $(seq 20); do kill -0 "$CPID" 2>/dev/null || break; sleep 0.5; done
   kill -0 "$CPID" 2>/dev/null && kill -KILL "$CPID" 2>/dev/null && sleep 0.5
   # The pane's shell exits cleanly (status 0) on a flagged SIGALRM if its rc sourced
-  # shell/multisession-close-trap.sh. Interactive bash runs that trap at an idle prompt.
+  # shell/multisession-rc.sh. Interactive bash runs that trap at an idle prompt.
   for i in $(seq 10); do
     fg=$("$Q" "$SVC" "$SESS" org.kde.konsole.Session.foregroundProcessId 2>/dev/null | tr -d '[:space:]')
     [ "$fg" = "$SHELLPID" ] && break; sleep 0.3
