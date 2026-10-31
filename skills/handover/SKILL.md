@@ -115,6 +115,13 @@ Skip if `close: no`. Otherwise, as your **final tool call**:
 "${CLAUDE_PLUGIN_ROOT}/scripts/close-pane.sh" --delay <close_delay_s, default 6>
 ```
 
+If `CLAUDE_PLUGIN_ROOT` is empty (skill read from a catalogue, plugin not installed), use a
+local clone of https://github.com/danielrosehill/Multisession if one exists. Otherwise fetch
+`scripts/close-pane.sh` and `scripts/close-pane-worker.sh` from
+`https://raw.githubusercontent.com/danielrosehill/Multisession/main/` into
+`~/.local/share/multisession/`, `chmod +x` both, and run it from there. The two files must sit
+in the same directory.
+
 It closes only the Konsole pane this session runs in (one split or tab, not the window, unless
 it is the window's last pane). It checks that the pane's shell is an ancestor of the call, so it
 cannot hit another pane. It detaches and acts after the delay so your last message renders. Read
