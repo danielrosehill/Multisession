@@ -61,7 +61,7 @@ shell_comm=$(ps -o comm= -p "$shell" | tr -d ' ')
 claude_comm=$(ps -o comm= -p "$claude" 2>/dev/null | tr -d ' ')
 
 trap_rc=false
-grep -qF 'multisession/close-trap.sh' "$HOME/.bashrc" 2>/dev/null && trap_rc=true
+grep -qF 'multisession/rc.sh' "$HOME/.bashrc" 2>/dev/null && trap_rc=true
 info="\"trap_in_bashrc\":$trap_rc,\"konsole_session\":\"$KONSOLE_DBUS_SESSION\",\"pane_pid\":$shell,\"pane_comm\":\"$shell_comm\",\"claude_pid\":${claude:-null},\"claude_comm\":\"$claude_comm\",\"delay_s\":$delay"
 
 if [ "$dry" = 1 ]; then echo "{\"closed\":false,\"dry_run\":true,$info}"; exit 0; fi

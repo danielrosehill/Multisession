@@ -7,6 +7,14 @@ the same file.
 
 No server, no broker, no shared meeting place. The target repo's folder is the mailbox.
 
+## Fresh session (`multisession:fresh-session`, v0.6.0)
+
+The context cleaner. At the end of a task, split this Konsole pane, start a new Claude Code
+session in it with a name and session ID chosen up front (`claude --name … --session-id …`),
+write `HANDOVER.md`, send it with `SendMessage`, and close this pane. If this pane runs a
+command rather than a plain shell, it opens a new tab instead, because a split would re-run
+that command. Script: `scripts/spawn-split.sh`.
+
 ## Handover and close (`multisession:handover`, v0.5.0)
 
 Pass this session's work to another running Claude session and close this one:
@@ -22,7 +30,7 @@ Pass this session's work to another running Claude session and close this one:
 Config: `~/.config/multisession/config.json` (see `templates/config.example.json`).
 
 How the pane close works, and why: [`docs/konsole-pane-close.md`](docs/konsole-pane-close.md).
-One-time setup for a clean close: `scripts/install-close-trap.sh` (adds one guarded line to
+One-time setup for a clean close and for split launches: `scripts/install-shell-hooks.sh` (adds one guarded line to
 `~/.bashrc`; new panes only).
 
 ## Asynchronous messages (`send`, `inbox`)
@@ -128,6 +136,7 @@ Recurring checks expire after 7 days and live only in the reader's session.
 
 | Skill | Side | What it does |
 |---|---|---|
+| `multisession:fresh-session` | A | Split this pane, launch a new named Claude, hand it the next task, close this pane. |
 | `multisession:handover` | A | Hand the work to a running peer: write `HANDOVER.md` to the local or Drive space, `SendMessage` a pointer, close this Konsole pane. |
 | `multisession:send` | A | Write a message into another repo's `a2a/`, ping its session if exactly one is running, append updates later. |
 | `multisession:inbox` | B | Read open messages, act on them, set requested reminders, record what was done. Also picks up founding briefs. |
