@@ -1,4 +1,4 @@
-# Claude-Dead-Drop
+# Multisession
 
 Asynchronous messages between Claude Code agents working in different repositories. Agent A writes
 a markdown file into repo B's `a2a/` folder. Agent B finds it when its session starts, or straight
@@ -6,6 +6,26 @@ away if A pings it. B acts on it, sets any reminders it asks for, and writes wha
 the same file.
 
 No server, no broker, no shared meeting place. The target repo's folder is the mailbox.
+
+## Handover and close (`multisession:handover`, v0.5.0)
+
+Pass this session's work to another running Claude session and close this one:
+
+1. Writes `HANDOVER.md` (goal, state, next steps, context, attachments) into an agent-to-agent
+   space: `local` (a folder on this machine, default `~/a2a-workspace`) for peers on the same
+   machine, or `drive` (a Google Drive folder) for peers on other machines or in the cloud.
+   Lightweight files only on Drive (default cap 10 MB each).
+2. Pings the peer with the built-in `SendMessage`, pointing at the file.
+3. Closes **only this session's Konsole pane** (`scripts/close-pane.sh`): not the window, not
+   the other splits or tabs.
+
+Config: `~/.config/multisession/config.json` (see `templates/config.example.json`).
+
+How the pane close works, and why: [`docs/konsole-pane-close.md`](docs/konsole-pane-close.md).
+One-time setup for a clean close: `scripts/install-close-trap.sh` (adds one guarded line to
+`~/.bashrc`; new panes only).
+
+## Asynchronous messages (`send`, `inbox`)
 
 **Status: v0.4.0, 2026-10-22.** The pattern has been run once end to end, by hand, before it was a
 plugin. The skills are new. See [`docs/verification.md`](docs/verification.md) for what is
@@ -39,12 +59,12 @@ not the letter.
 ```
 repo A (sender)                                 repo B (reader)
 ───────────────                                 ───────────────
-dead-drop:send
+multisession:send
   write B/a2a/2026-10-22_<subject>.md  ───────▶ a2a/2026-10-22_<subject>.md   status: open
   ListAgents → one peer named b-*?
      yes → SendMessage "new message in a2a/…" ─▶ arrives mid-session
-     no  → nothing; the file waits             SessionStart hook: "dead-drop: 1 open message"
-                                                dead-drop:inbox
+     no  → nothing; the file waits             SessionStart hook: "multisession: 1 open message"
+                                                multisession:inbox
                                                   act on "What to do"
                                                   run the readiness check, not the clock
                                                   schedule: → CronCreate one-shot reminder
@@ -101,23 +121,24 @@ Recurring checks expire after 7 days and live only in the reader's session.
 |---|---|
 | `note` | Information the other agent should have. |
 | `request` | Something the other agent should do. |
-| `founding` | The first brief of a brand-new repo, written by `dead-drop:breakout` when an idea does not belong in the current repo. See [`docs/breakout.md`](docs/breakout.md). |
+| `founding` | The first brief of a brand-new repo, written by `multisession:breakout` when an idea does not belong in the current repo. See [`docs/breakout.md`](docs/breakout.md). |
 | `handover` | To the next session in the *same* repo. For the full session-to-session handover workflow, Claude-Hopper does more. |
 
 ## Skills
 
 | Skill | Side | What it does |
 |---|---|---|
-| `dead-drop:send` | A | Write a message into another repo's `a2a/`, ping its session if exactly one is running, append updates later. |
-| `dead-drop:inbox` | B | Read open messages, act on them, set requested reminders, record what was done. Also picks up founding briefs. |
-| `dead-drop:breakout` | A | An idea that needs its own repo: create the repo, write a founding brief into its `a2a/`, spawn and ping a session there, go back to work. |
+| `multisession:handover` | A | Hand the work to a running peer: write `HANDOVER.md` to the local or Drive space, `SendMessage` a pointer, close this Konsole pane. |
+| `multisession:send` | A | Write a message into another repo's `a2a/`, ping its session if exactly one is running, append updates later. |
+| `multisession:inbox` | B | Read open messages, act on them, set requested reminders, record what was done. Also picks up founding briefs. |
+| `multisession:breakout` | A | An idea that needs its own repo: create the repo, write a founding brief into its `a2a/`, spawn and ping a session there, go back to work. |
 
 Plus `hooks/hooks.json`: a SessionStart hook running `scripts/a2a-inbox.sh`, which lists open
 messages for the repo the session started in and prints nothing when there are none.
 
 ## Install
 
-From the `danielrosehill` marketplace (`Claude-Code-Plugins`) as `dead-drop`.
+From the `danielrosehill` marketplace (`Claude-Code-Plugins`) as `multisession`.
 
 Without installing the plugin, the hook still works as a user-level hook. In
 `~/.claude/settings.json`:
@@ -128,7 +149,7 @@ Without installing the plugin, the hook still works as a user-level hook. In
     "SessionStart": [
       {
         "matcher": "startup|resume|clear",
-        "hooks": [{ "type": "command", "command": "/path/to/Claude-Dead-Drop/scripts/a2a-inbox.sh", "timeout": 10 }]
+        "hooks": [{ "type": "command", "command": "/path/to/Multisession/scripts/a2a-inbox.sh", "timeout": 10 }]
       }
     ]
   }
@@ -159,7 +180,7 @@ Fourth iteration of one idea, all in this repo since 2026-10-22
 1. **Agent Junction** (Feb 2026), the first: an encrypted synchronous MCP bus. [`iterations/01-agent-junction/`](iterations/01-agent-junction/)
 2. **Agent Relay** (May 2026): a LAN relay server with file transfer. [`iterations/02-agent-relay/`](iterations/02-agent-relay/)
 3. **Claude-Breakout** (Aug 2026), this repo's former name: idea → new repo over native `SendMessage`. Now the `founding` kind; old README at [`docs/breakout.md`](docs/breakout.md).
-4. **dead-drop** (Oct 2026): the file mailbox.
+4. **multisession** (Oct 2026): the file mailbox.
 
 Research scans, newest first: [`research/`](research/).
 

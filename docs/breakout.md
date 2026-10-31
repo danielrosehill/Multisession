@@ -1,9 +1,9 @@
 # The breakout pattern
 
-> Moved here from the repo README on 2026-10-22, when Claude-Breakout became Claude-Dead-Drop.
-> Breakout is now one use of the dead-drop mailbox: the founding brief is a `kind: founding`
+> Moved here from the repo README on 2026-10-22, when Claude-Breakout became Multisession.
+> Breakout is now one use of the multisession mailbox: the founding brief is a `kind: founding`
 > message in the new repo's `a2a/`, and the receiving procedure (formerly `breakout-adopt`) is part
-> of `dead-drop:inbox`. The reasoning below is unchanged.
+> of `multisession:inbox`. The reasoning below is unchanged.
 
 See [`verification.md`](verification.md) for what is confirmed versus inferred.
 
@@ -149,8 +149,8 @@ than a theoretical one. Blocked work goes back to the user, never sideways to a 
 
 | Skill | Side | What it does |
 |---|---|---|
-| `dead-drop:breakout` | emit | Recognise, brief, create the repo, hand off, return to work |
-| `dead-drop:inbox` (founding briefs) | receive | A fresh session in a new repo picks up its founding brief and starts |
+| `multisession:breakout` | emit | Recognise, brief, create the repo, hand off, return to work |
+| `multisession:inbox` (founding briefs) | receive | A fresh session in a new repo picks up its founding brief and starts |
 
 The receiving end needs a procedure too. An agent that starts in an empty repo containing one
 document, with no idea it was spawned deliberately, will typically ask "what would you like to work
@@ -172,7 +172,7 @@ question is open.
   (local only), so there is no link to give yet.
 - **[Claude-Hopper](https://github.com/danielrosehill/Claude-Hopper)** — session spawning and handover.
 - **[Claude-Code-Plugins](https://github.com/danielrosehill/Claude-Code-Plugins)** — the marketplace,
-  where this plugin is listed as `dead-drop` (formerly `idea-breakout`).
+  where this plugin is listed as `multisession` (formerly `idea-breakout`).
 
 ## Install
 

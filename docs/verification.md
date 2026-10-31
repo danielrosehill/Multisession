@@ -1,9 +1,9 @@
 # What is verified here, and what is not
 
-Written 12 August 2026 for Claude-Breakout; extended 22 October 2026 for dead-drop. Kept honest so
+Written 12 August 2026 for Claude-Breakout; extended 22 October 2026 for multisession. Kept honest so
 a later reader knows which claims to lean on.
 
-## dead-drop (2026-10-22)
+## multisession (2026-10-22)
 
 ### Confirmed
 
@@ -80,5 +80,5 @@ subagents, so that ceiling is probably lower here. Untested.
    that makes the handoff race the spawn?
 2. Does the folder-name default produce collisions in practice across sibling repos in the same
    topic group?
-3. Does the receiving agent, following `dead-drop:inbox` (formerly `breakout-adopt`), start work without asking an opening
+3. Does the receiving agent, following `multisession:inbox` (formerly `breakout-adopt`), start work without asking an opening
    question?

@@ -10,7 +10,7 @@ into B's mailbox as a file, then tell B it is there if B is running. The file is
 `SendMessage` is only a pointer, because a cross-session message carries text only, never files
 or history, and B may not be running at all.
 
-Full format: `docs/protocol.md` in https://github.com/danielrosehill/Claude-Dead-Drop.
+Full format: `docs/protocol.md` in https://github.com/danielrosehill/Multisession.
 
 ## 1. Find the target repo
 
@@ -72,7 +72,7 @@ append a note under Done and set another reminder 30 minutes later." Pick a time
 your estimate, not on it.
 
 You cannot schedule anything in B's session yourself. B does that when it reads the message
-(`dead-drop:inbox`).
+(`multisession:inbox`).
 
 ### Asking B to keep watching (a living message)
 

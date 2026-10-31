@@ -1,23 +1,27 @@
 {
-  "name": "dead-drop",
-  "version": "0.4.0",
-  "description": "Asynchronous agent-to-agent messages between Claude Code sessions working in different repositories. Agent A writes a markdown message into repo B's a2a/ folder and pings B by SendMessage if it is running; B's SessionStart hook lists open messages, B acts on them, sets any reminders the message asks for in its own scheduler, and records what it did in the same file. For long tasks the sender keeps one living message current (revision: counter) and asks the reader to re-check it on an interval (watch: 30m). No server and no shared meeting place: the target repo's folder is the mailbox. Breakout (an idea that needs its own new repo) and same-repo handover are message kinds.",
+  "name": "multisession",
+  "version": "0.5.0",
+  "description": "Agent-to-agent work between Claude Code sessions. handover: pass this session's work to another running session with the built-in SendMessage, leave the payload in an agent-to-agent space (a local folder, or a Google Drive folder for agents on other machines), and close this session's own Konsole pane. send/inbox: asynchronous messages written into another repo's a2a/ folder, with SessionStart pickup, reminders and living messages. Breakout (an idea that needs its own repo) is a message kind.",
   "author": {
     "name": "Daniel Rosehill",
     "url": "https://github.com/danielrosehill"
   },
-  "repository": "https://github.com/danielrosehill/Claude-Dead-Drop",
+  "repository": "https://github.com/danielrosehill/Multisession",
   "license": "MIT",
   "keywords": [
-    "agent-to-agent",
     "a2a",
-    "cross-session",
-    "cross-repo",
-    "mailbox",
-    "sendmessage",
-    "handoff",
+    "agent-to-agent",
     "breakout",
+    "cross-repo",
+    "cross-session",
+    "google-drive",
+    "handoff",
+    "handover",
+    "konsole",
+    "mailbox",
+    "multisession",
+    "polling",
     "reminders",
-    "polling"
+    "sendmessage"
   ]
 }
