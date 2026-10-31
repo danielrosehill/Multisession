@@ -1,4 +1,4 @@
-# The dead-drop protocol
+# The multisession protocol
 
 The message format and lifecycle that every skill in this plugin reads and writes. Version 1,
 written 2026-10-22.
@@ -108,7 +108,7 @@ On the reader's side (Claude Code, verified 2026-10-22 from the `CronCreate` too
 - **Cron runs in the machine's local timezone**, but `at` is UTC. Convert before building the
   expression. Getting this wrong fires the reminder hours off.
 - The prompt is the `do` text **plus a pointer back to the message file**, so the fired prompt is
-  readable cold: `"[dead-drop] a2a/2026-10-22_meorav-v2-eta.md: <do>"`.
+  readable cold: `"[multisession] a2a/2026-10-22_meorav-v2-eta.md: <do>"`.
 - **Jobs are session-only and fire only while the session is idle.** They disappear when the
   session exits. The reader records the reminder in `## Done` with its job ID and says in one line
   to the user that it lasts only while this session stays open. If the session will not stay open,
@@ -142,7 +142,7 @@ a history. The reader owns `status` and `## Done`.
 1. Set a **recurring** `CronCreate` job on that interval, on off-minutes (`30m` →
    `"7,37 * * * *"`, `1h` → `"23 * * * *"`).
 2. The prompt does the cheap check first and stops there if nothing changed:
-   `[dead-drop watch] a2a/<file>: run grep -E '^(revision|status|watch):' on it. If revision is
+   `[multisession watch] a2a/<file>: run grep -E '^(revision|status|watch):' on it. If revision is
    higher than the last one recorded under ## Done, read the ## Update lines and the changed
    sections, act, and record "seen r<N>". If status is not open or watch is off, CronDelete this job
    and say so. Otherwise do nothing and say nothing.`

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# List open dead-drop messages in a repo's a2a/ folder.
+# List open multisession messages in a repo's a2a/ folder.
 # As a SessionStart hook its stdout is added to the session's context; it prints nothing when the
 # inbox is empty, so repos without mail cost nothing.
 # Usage: a2a-inbox.sh [repo-dir]   (default: $CLAUDE_PROJECT_DIR, then $PWD)
@@ -30,6 +30,6 @@ for f in "$dir"/*.md; do
 done
 
 [ ${#lines[@]} -eq 0 ] && exit 0
-echo "dead-drop: ${#lines[@]} open message(s) from agents in other repos, in $dir."
-echo "Read them before other work and handle them with the dead-drop:inbox skill (format: https://github.com/danielrosehill/Claude-Dead-Drop/blob/master/docs/protocol.md):"
+echo "multisession: ${#lines[@]} open message(s) from agents in other repos, in $dir."
+echo "Read them before other work and handle them with the multisession:inbox skill (format: https://github.com/danielrosehill/Multisession/blob/master/docs/protocol.md):"
 printf '%s\n' "${lines[@]}"

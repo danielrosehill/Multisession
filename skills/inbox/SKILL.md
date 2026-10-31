@@ -1,6 +1,6 @@
 ---
 name: inbox
-description: Read and act on messages that agents in other repositories left in this repo's a2a/ folder, including setting any reminder a message asks for in this session's own scheduler, and re-reading a living message on the interval it asks for (watch:). Use when the session-start notice says "dead-drop: N open message(s)", when a cross-session message says a file is waiting in a2a/, when the user says "check your a2a", "read the message agent A left", "you've got mail from the other repo", or when a session starts in a new, near-empty repo whose a2a/ holds a founding brief. Do NOT use for messages you are sending; that is dead-drop:send.
+description: Read and act on messages that agents in other repositories left in this repo's a2a/ folder, including setting any reminder a message asks for in this session's own scheduler, and re-reading a living message on the interval it asks for (watch:). Use when the session-start notice says "multisession: N open message(s)", when a cross-session message says a file is waiting in a2a/, when the user says "check your a2a", "read the message agent A left", "you've got mail from the other repo", or when a session starts in a new, near-empty repo whose a2a/ holds a founding brief. Do NOT use for messages you are sending; that is multisession:send.
 ---
 
 # inbox
@@ -9,7 +9,7 @@ You are agent B. An agent in another repo left you a message in this repo's `a2a
 it, do what it asks within your own permissions, set any reminders it asks for, and record what you
 did in the same file so the sender can see it.
 
-Full format: `docs/protocol.md` in https://github.com/danielrosehill/Claude-Dead-Drop.
+Full format: `docs/protocol.md` in https://github.com/danielrosehill/Multisession.
 
 ## 1. List what is open
 
@@ -40,7 +40,7 @@ For each `schedule:` entry, set a one-shot reminder in **your own** harness. In 
    expressions are local time. Skipping this fires the reminder hours off.
 2. `CronCreate` with `cron: "<M> <H> <DoM> <Mon> *"`, `recurring: false`, and a prompt readable
    cold:
-   `[dead-drop] a2a/<file>: <do>. Read the message first; record the outcome under ## Done.`
+   `[multisession] a2a/<file>: <do>. Read the message first; record the outcome under ## Done.`
 3. Read the actual next fire time back from the result (or `CronList`) and use that time.
 4. If `at` has already passed, do the `do` now instead.
 
@@ -57,7 +57,7 @@ wants you to re-read it on that interval while it is `open`.
 1. `CronCreate`, `recurring: true`, on off-minutes: `30m` → `"7,37 * * * *"`, `15m` →
    `"4,19,34,49 * * * *"`, `1h` → `"23 * * * *"`.
 2. Prompt (the do-nothing path must be one grep and no output, because every check is a turn):
-   `[dead-drop watch] a2a/<file>: run grep -E '^(revision|status|watch):' on it. If revision is
+   `[multisession watch] a2a/<file>: run grep -E '^(revision|status|watch):' on it. If revision is
    higher than the last "seen r<N>" under ## Done, read the ## Update lines and changed sections,
    act, and record "seen r<N>". If status is not open or watch is off, CronDelete this job and say
    so. Otherwise do nothing and say nothing.`
@@ -91,7 +91,7 @@ Do not delete the file. The sender may append an update to it later.
 
 If the sender is still running (`from_agent` appears in `ListAgents`) and you need something from
 it, or it needs to know you could not do what it asked, send it one line by `SendMessage`, or
-write a reply into **its** repo's `a2a/` with `reply_to:` set (see dead-drop:send). Routine
+write a reply into **its** repo's `a2a/` with `reply_to:` set (see multisession:send). Routine
 confirmations go in `## Done`, which the sender can read. They do not need a message.
 
 ## 6. Founding briefs

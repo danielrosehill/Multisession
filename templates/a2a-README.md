@@ -9,5 +9,5 @@ which repo, when (UTC), and whether it is still `open`.
   records what it did under `## Done`, and sets `status: done`.
 - Files are kept as the record of what was agreed. They are not deleted after reading.
 
-Format: the `dead-drop` Claude Code plugin, `docs/protocol.md`
-(https://github.com/danielrosehill/Claude-Dead-Drop).
+Format: the `multisession` Claude Code plugin, `docs/protocol.md`
+(https://github.com/danielrosehill/Multisession).

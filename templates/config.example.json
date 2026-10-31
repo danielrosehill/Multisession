@@ -1,0 +1,11 @@
+{
+  "default_space": "local",
+  "local_space": "~/a2a-workspace",
+  "drive": {
+    "folder_id": "<Google Drive folder ID for remote agent exchange>",
+    "folder_url": "https://drive.google.com/drive/folders/<id>",
+    "account": "<google account the Drive tools act as>",
+    "max_file_mb": 10
+  },
+  "close_delay_s": 6
+}
