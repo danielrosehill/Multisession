@@ -1,9 +1,9 @@
 ---
-name: fresh-session
-description: Start the next task in a fresh Claude Code session with a clean context. Splits this Konsole pane, launches a new named Claude there (its own peer name and session ID), writes a handover, sends it with the built-in SendMessage, and optionally closes this pane. Use on "start fresh", "new session for the next task", "break out to a new session", "context is full, carry on in a new one", "split and hand over", "clear the decks and continue", "clean up the context", "open another Claude here and hand over to it", "new instance in this repo and pass it this". For an idea that needs its own new repo, use breakout instead; for handing to a session that is already running, use handover.
+name: spawn-fresh
+description: Start the next task in a fresh Claude Code session with a clean context. Opens a new Konsole tab in this repo (or a split), launches a new named Claude there (its own peer name and session ID), writes a handover, sends it with the built-in SendMessage, and optionally closes this pane. Use on "spawn fresh", "start fresh", "new tab and hand over", "new session for the next task", "break out to a new session", "context is full, carry on in a new one", "split and hand over", "clear the decks and continue", "clean up the context", "open another Claude here and hand over to it", "new instance in this repo and pass it this". For an idea that needs its own new repo, use breakout instead; for handing to a session that is already running, use handover.
 ---
 
-# fresh-session
+# spawn-fresh
 
 The context cleaner. This session has finished a task, or its context is heavy, and the next
 piece of work should start clean. You open the new session yourself, beside this one, give it a
@@ -21,22 +21,23 @@ built in: `claude --name` (sets the peer name `SendMessage` addresses), `claude 
 | `task` | what the new session should do next | from the conversation; ask if unclear |
 | `name` | peer name for the new session | `<cwd folder, lowercased>-<2–3 word task slug>`, e.g. `multisession-docs-pass` |
 | `dir` | where the new session works | current directory |
-| `direction` | `right` (side by side) or `down` (stacked) | `right` |
+| `layout` | `tab` or `split` | `tab` |
+| `direction` | for a split: `right` (side by side) or `down` (stacked) | `right` |
 | `close` | close this pane once the handover is acknowledged as sent | `yes` |
 
 ## 0. Preconditions
 
-- In Konsole, with the shell hooks installed. `spawn-split.sh` checks both and says what is
+- In Konsole, with the shell hooks installed. `spawn-fresh.sh` checks both and says what is
   missing. If the hooks are missing, offer `scripts/install-shell-hooks.sh`, which appends one
-  guarded line to `~/.bashrc`. Don't run it unasked. It takes effect in **new** panes; the split
-  it makes is new, so it works straight away.
+  guarded line to `~/.bashrc`. Don't run it unasked. It takes effect in **new** panes; the tab or
+  split it makes is new, so it works straight away.
 - Commit and push what should survive. Anything left uncommitted goes in the handover's `## State`.
 
 Scripts are in this plugin's `scripts/`. If `CLAUDE_PLUGIN_ROOT` is empty (skill read from a
 catalogue), use a local clone of https://github.com/danielrosehill/Multisession, or fetch
-`scripts/spawn-split.sh`, `scripts/close-pane.sh`, `scripts/close-pane-worker.sh` and
+`scripts/spawn-fresh.sh`, `scripts/close-pane.sh`, `scripts/close-pane-worker.sh` and
 `shell/multisession-rc.sh` from
-`https://raw.githubusercontent.com/danielrosehill/Multisession/main/`, keeping the same layout.
+`https://raw.githubusercontent.com/danielrosehill/Multisession/master/`, keeping the same layout.
 
 ## 1. Write the handover first
 
@@ -53,14 +54,15 @@ skills. Name skills by catalogue id or `SKILL.md` path, not by bare name.
 ## 2. Launch the new session
 
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/spawn-split.sh" --name <name> --dir <dir> --direction <right|down>
+"${CLAUDE_PLUGIN_ROOT}/scripts/spawn-fresh.sh" --name <name> --dir <dir> --layout <tab|split>
 ```
 
-What it does: it finds this pane's view, writes a one-shot launch file, and splits the pane.
-The new pane's shell claims the file and runs `claude --name <name> --session-id <uuid>` in
-`<dir>`, then the script waits until the new Claude's messaging socket is up. If this pane's
-process isn't a plain shell (a `claude --resume` pane, a `bash -c` pane), the split would copy
-that command, so it opens a **new tab** instead (`"mode":"tab"`).
+What it does: it writes a one-shot launch file and opens a new tab (or splits this pane, with
+`--direction` for the side). The new shell claims the file and runs
+`claude --name <name> --session-id <uuid>` in `<dir>`, then the script waits until the new
+Claude's messaging socket is up. A split is refused when this pane's process isn't a plain shell
+(a `claude --resume` pane, a `bash -c` pane), because the split would copy that command, so it
+opens a tab instead (`"mode":"tab"`).
 
 Read the JSON:
 
@@ -96,7 +98,7 @@ it can't prove the pane is its own.
 
 One line:
 
-> Started `<name>` (session `<uuid>`) in a split <right/below> / a new tab, handed over `<path>`. Closing this pane in 6s.
+> Started `<name>` (session `<uuid>`) in a new tab / a split <right/below>, handed over `<path>`. Closing this pane in 6s.
 
 ## Hard limits
 

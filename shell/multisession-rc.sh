@@ -8,7 +8,7 @@ case $- in *i*) ;; *) return 0 2>/dev/null || exit 0 ;; esac
 #    keypress (tested bash 5.3.9), and nothing else sends ALRM to a shell.
 trap '[ -e "${XDG_RUNTIME_DIR:-/tmp}/multisession-close.$$" ] && { rm -f "${XDG_RUNTIME_DIR:-/tmp}/multisession-close.$$"; exit 0; }' ALRM
 
-# 2. Launch claim (scripts/spawn-split.sh). Konsole refuses Session.runCommand/sendText by
+# 2. Launch claim (scripts/spawn-fresh.sh). Konsole refuses Session.runCommand/sendText by
 #    default, so a new split cannot be told what to run. Instead the spawner writes a pending
 #    launch file naming this Konsole window, then splits; the new pane's shell claims it here
 #    (atomic mv, so exactly one pane takes it) and runs it at its first prompt.

@@ -34,7 +34,7 @@ Run `ListAgents`. Note this session's own name ("This session is <name>"). Drop 
 the name given. "When ready" means finish and push the step in hand first, then hand over.
 
 The user often opens the new session themselves, in the same repo, and names it. That is this skill.
-If they want you to open it, that is `fresh-session`.
+If they want you to open it, that is `spawn-fresh`.
 
 - The peer named, or the one clear match for a loose name ("the podcast agent"), is the target.
 - Two candidates: ask. No match: say so and offer to write the handover anyway and close
@@ -126,7 +126,7 @@ Skip if `close: no`. Otherwise, as your **final tool call**:
 If `CLAUDE_PLUGIN_ROOT` is empty (skill read from a catalogue, plugin not installed), use a
 local clone of https://github.com/danielrosehill/Multisession if one exists. Otherwise fetch
 `scripts/close-pane.sh` and `scripts/close-pane-worker.sh` from
-`https://raw.githubusercontent.com/danielrosehill/Multisession/main/` into
+`https://raw.githubusercontent.com/danielrosehill/Multisession/master/` into
 `~/.local/share/multisession/`, `chmod +x` both, and run it from there. The two files must sit
 in the same directory.
 
