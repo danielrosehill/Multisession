@@ -18,7 +18,8 @@ a file, never the payload.
 |---|---|---|
 | `name` | peer name, letters, digits, `.`, `_`, `-`. It is the `SendMessage` address | required; `<folder, lowercased>-<2–3 word task slug>` |
 | `dir` | where the new session works | current directory |
-| `layout` | `split` (a new pane beside this one, Konsole's split view) or `tab` | `split` |
+| `layout` | `split` (a new pane beside this one, Konsole's split view), `tab`, or `window` (a new Konsole window) | `split` |
+| `terminal` | open a plain shell with no Claude (`--terminal`); `name` is then optional | off |
 | `direction` | for a split: `right` or `down` | `right` |
 | `message` | the pointer to send, naming an absolute path | none: launch only |
 
@@ -27,7 +28,7 @@ Say "tab" or "split" and it is honoured. Otherwise use `split`.
 ## 1. Launch
 
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/spawn-session.sh" --name <name> --dir <dir> --layout <split|tab> --direction <right|down>
+"${CLAUDE_PLUGIN_ROOT}/scripts/spawn-session.sh" --name <name> --dir <dir> --layout <split|tab|window> --direction <right|down>
 ```
 
 If `CLAUDE_PLUGIN_ROOT` is empty (skill read from a catalogue), use a local clone of
@@ -67,7 +68,7 @@ A successful send means the message reached the session, not that it was read.
 
 ## Hard limits
 
-- **One new session per call.** Never loop on a spawn. If a launch fails, report it and stop.
+- **One new session per call.** For several, use `compose`. If a launch fails, report it and stop.
   Retrying blind stacks up panes.
 - **Nothing this session was denied.** Permission boundaries are per session.
 - **No secret values** in the message.

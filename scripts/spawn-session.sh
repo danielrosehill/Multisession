@@ -2,13 +2,14 @@
 # spawn-session.sh: start a new, named Claude Code session in a split of the Konsole pane this
 # script runs in, or in a new tab. Prints one JSON line.
 #
-# Usage: spawn-session.sh --name NAME [--dir DIR] [--session-id UUID] [--layout split|tab]
-#                       [--direction right|down] [--wait SECONDS]
+# Usage: spawn-session.sh --name NAME [--dir DIR] [--session-id UUID] [--layout split|tab|window]
+#                       [--direction right|down] [--wait SECONDS] [--terminal]
 #   --name        peer name for the new session (claude --name); this is its SendMessage address
 #   --dir         working directory for it (default: current directory)
 #   --session-id  conversation UUID (claude --session-id); generated if omitted
-#   --layout      split (default) or tab
+#   --layout      split (default), tab, or window (a new Konsole window)
 #   --direction   for a split: right (side by side, default) or down (stacked)
+#   --terminal    open a plain shell in --dir, with no Claude. --name is then optional
 #   --wait        seconds to wait for the new session's messaging socket (default 45)
 #   MULTISESSION_LAUNCH_CMD (env, testing only): run this instead of claude
 #
@@ -16,7 +17,7 @@
 # Konsole refuses Session.runCommand/sendText by default, so the new pane's own shell claims a
 # pending launch file this script writes. Exit 0 = launched; 2 = refused/failed (JSON says why).
 set -u
-name=""; dir="$PWD"; sid=""; layout=split; direction=right; wait_s=45
+name=""; dir="$PWD"; sid=""; layout=split; direction=right; wait_s=45; terminal=false
 while [ $# -gt 0 ]; do
   case "$1" in
     --name) name="$2"; shift 2 ;;
@@ -25,17 +26,46 @@ while [ $# -gt 0 ]; do
     --layout) layout="$2"; shift 2 ;;
     --direction) direction="$2"; shift 2 ;;
     --wait) wait_s="$2"; shift 2 ;;
+    --terminal) terminal=true; shift ;;
     *) echo "{\"launched\":false,\"reason\":\"unknown argument $1\"}"; exit 2 ;;
   esac
 done
 fail() { echo "{\"launched\":false,\"reason\":\"$1\"${2:+,$2}}"; exit 2; }
 
+[ "$terminal" = true ] && [ -z "$name" ] && name=terminal
 [[ "$name" =~ ^[A-Za-z0-9._-]+$ ]] || fail "--name is required: letters, digits, . _ - only"
 dir=$(readlink -f "$dir"); [ -d "$dir" ] || fail "no such directory: $dir"
 [ -n "$sid" ] || sid=$(cat /proc/sys/kernel/random/uuid)
 [[ "$sid" =~ ^[0-9a-f-]{36}$ ]] || fail "--session-id must be a UUID"
-case "$layout" in tab|split) ;; *) fail "--layout must be tab or split" ;; esac
+case "$layout" in tab|split|window) ;; *) fail "--layout must be split, tab or window" ;; esac
 case "$direction" in right) horiz=true ;; down) horiz=false ;; *) fail "--direction must be right or down" ;; esac
+
+# A new window needs neither the shell hook nor this pane: Konsole takes the command directly.
+# --separate gives it its own process, so its shell can be found from the PID. `exec bash` keeps a
+# plain shell in the window once Claude exits.
+if [ "$layout" = window ]; then
+  command -v konsole >/dev/null || fail "konsole not found"
+  if [ "$terminal" = true ]; then
+    setsid -f konsole --separate --workdir "$dir" >/dev/null 2>&1 || fail "konsole did not start"
+    echo "{\"launched\":true,\"name\":\"$name\",\"dir\":\"$dir\",\"mode\":\"window\",\"terminal\":true}"
+    exit 0
+  fi
+  wcmd="${MULTISESSION_LAUNCH_CMD:-claude --name $(printf %q "$name") --session-id $(printf %q "$sid")}"
+  nohup setsid konsole --separate --workdir "$dir" -e bash -ic "$wcmd; exec bash" >/dev/null 2>&1 &
+  kp=$!
+  ready=false; cpid=null; end=$(( $(date +%s) + wait_s ))
+  while [ -z "${MULTISESSION_LAUNCH_CMD:-}" ] && [ "$(date +%s)" -lt "$end" ]; do
+    for sh in $(pgrep -P "$kp" 2>/dev/null); do
+      for c in $(pgrep -P "$sh" -x claude 2>/dev/null); do
+        cpid=$c; [ -S "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/cc-socks/$c.sock" ] && { ready=true; break 3; }
+      done
+    done
+    sleep 0.5
+  done
+  echo "{\"launched\":true,\"name\":\"$name\",\"session_id\":\"$sid\",\"dir\":\"$dir\",\"mode\":\"window\",\"konsole_pid\":$kp,\"claude_pid\":$cpid,\"messaging_ready\":$ready}"
+  exit 0
+fi
+
 [ -n "${KONSOLE_DBUS_SERVICE:-}" ] && [ -n "${KONSOLE_DBUS_SESSION:-}" ] && [ -n "${KONSOLE_DBUS_WINDOW:-}" ] \
   || fail "not running inside a Konsole session"
 q=$(command -v qdbus6 || command -v qdbus || true); [ -n "$q" ] || fail "qdbus6/qdbus not found"
@@ -97,7 +127,9 @@ fi
 # Pending launch file, claimed by the new pane's shell hook.
 ld="${XDG_RUNTIME_DIR:-/tmp}/multisession-launch"; mkdir -p "$ld"; chmod 700 "$ld"
 pf="$ld/pending.$(date +%s%N).$$"
-if [ -n "${MULTISESSION_LAUNCH_CMD:-}" ]; then
+if [ "$terminal" = true ]; then
+  cmd=":"
+elif [ -n "${MULTISESSION_LAUNCH_CMD:-}" ]; then
   cmd="$MULTISESSION_LAUNCH_CMD"
 else
   cmd="claude --name $(printf %q "$name") --session-id $(printf %q "$sid")"
@@ -128,7 +160,7 @@ fi
 
 # Ready = the new Claude has its cross-session messaging socket open.
 ready=false; cpid=null
-if [ -z "${MULTISESSION_LAUNCH_CMD:-}" ] && [ -n "$new" ]; then
+if [ "$terminal" = false ] && [ -z "${MULTISESSION_LAUNCH_CMD:-}" ] && [ -n "$new" ]; then
   shellpid=$("$q" "$KONSOLE_DBUS_SERVICE" "/Sessions/$new" org.kde.konsole.Session.processId 2>/dev/null | tr -d '[:space:]')
   end=$(( $(date +%s) + wait_s ))
   while [ "$(date +%s)" -lt "$end" ]; do
