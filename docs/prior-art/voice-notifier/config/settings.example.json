@@ -1,0 +1,30 @@
+{
+  "operator_name": "Alex",
+  "from_number": "+15550100",
+  "from_number_label": "Claude (Alex's assistant)",
+
+  "credentials": {
+    "account_sid": { "env": "TWILIO_ACCOUNT_SID" },
+    "auth_token": { "env": "TWILIO_AUTH_TOKEN" }
+  },
+
+  "calling_hours": {
+    "timezone": "Asia/Jerusalem",
+    "earliest": "08:00",
+    "latest": "21:00"
+  },
+
+  "machine_detection": "DetectMessageEnd",
+  "call_timeout_seconds": 30,
+  "record": false,
+
+  "tier1": {
+    "relay_websocket_url": "wss://voice-notifier.example.com/relay",
+    "tts_provider": "ElevenLabs",
+    "voice": "",
+    "model": "claude-opus-5",
+    "effort": "low"
+  },
+
+  "state_dir": "var/calls"
+}

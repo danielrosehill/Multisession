@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/danielrosehill/Claude-Voice-Notifier/schema/brief.schema.json",
+  "title": "Call brief",
+  "description": "The one-time, per-call payload. Everything specific to THIS call and never reused. Layers one and two of the prompt (persona and conduct) are fixed and live in src/voice_notifier/prompt.py, not here.",
+  "type": "object",
+  "required": ["brief_id", "tier", "operator", "recipient", "message", "voicemail"],
+  "additionalProperties": false,
+  "properties": {
+    "brief_id": {
+      "type": "string",
+      "description": "Opaque handle. This is what travels in the TwiML custom parameters — the brief itself never goes over the wire to Twilio.",
+      "pattern": "^b_[0-9]{8}_[0-9]{4}_[a-z0-9_]+$"
+    },
+    "tier": {
+      "type": "integer",
+      "description": "0 = announcement (no LLM in the call path). 1 = conversational.",
+      "enum": [0, 1]
+    },
+    "operator": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The person Claude is acting for. Spoken in the greeting of every call.",
+          "minLength": 1
+        }
+      }
+    },
+    "recipient": {
+      "type": "object",
+      "description": "Must resolve to an allowlist entry. `key` is the allowlist lookup; `number` is checked against it and the call is refused on mismatch.",
+      "required": ["key", "name", "number"],
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string",
+          "pattern": "^[a-z0-9_-]+$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "relationship": {
+          "type": "string",
+          "description": "Prompt material — it sets the register and vocabulary, not just the tone. Tier 1 only."
+        },
+        "number": {
+          "type": "string",
+          "description": "E.164.",
+          "pattern": "^\\+[1-9][0-9]{6,14}$"
+        },
+        "language": {
+          "type": "string",
+          "description": "BCP-47. English only for now — see D11.",
+          "enum": ["en-GB", "en-US", "en-AU", "en-IE"],
+          "default": "en-GB"
+        }
+      }
+    },
+    "greeting": {
+      "type": "string",
+      "description": "Spoken immediately on answer, before the recipient says anything. This is where the AI disclosure goes, and it is mandatory in effect: if omitted, one is generated. Tier 1 uses it as ConversationRelay's welcomeGreeting.",
+      "minLength": 1
+    },
+    "message": {
+      "type": "string",
+      "description": "The thing being conveyed. Written to be spoken, not read. Front-load the point; no lists, no parentheses; times as a person would say them.",
+      "minLength": 1,
+      "maxLength": 1200
+    },
+    "anticipated_questions": {
+      "type": "array",
+      "description": "Pre-authorised answers. Anything not here gets 'I don't know — contact <operator> directly'. A question that is really a request to pass a message on gets the answer REFUSAL.",
+      "items": {
+        "type": "object",
+        "required": ["question", "answer"],
+        "additionalProperties": false,
+        "properties": {
+          "question": { "type": "string", "minLength": 1 },
+          "answer": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Free text, or a string beginning with REFUSAL to route to the fixed no-message wording from the conduct layer."
+          }
+        }
+      }
+    },
+    "prohibitions": {
+      "type": "array",
+      "description": "Negative constraints for THIS call, on top of the standing ones in the conduct layer. Each should be a specific thing a helpful model would otherwise volunteer.",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "closing": {
+      "type": "string",
+      "description": "How to end, so the agent does not improvise a goodbye."
+    },
+    "caps": {
+      "type": "object",
+      "description": "Hard turn and duration limits. Enforced by the relay server, not by the prompt.",
+      "additionalProperties": false,
+      "properties": {
+        "max_turns": { "type": "integer", "minimum": 1, "maximum": 30, "default": 8 },
+        "max_seconds": { "type": "integer", "minimum": 15, "maximum": 600, "default": 120 }
+      }
+    },
+    "voicemail": {
+      "type": "object",
+      "description": "What to say if a machine answers. Always present — a tier 1 call degrades to a tier 0 announcement.",
+      "required": ["leave_message"],
+      "additionalProperties": false,
+      "properties": {
+        "leave_message": { "type": "boolean" },
+        "text": {
+          "type": "string",
+          "description": "Required when leave_message is true. Must identify Claude as an AI, same as a live greeting would.",
+          "minLength": 1
+        }
+      }
+    },
+    "_comment": {
+      "type": "string",
+      "description": "Ignored by the tooling. Present so worked examples can explain themselves."
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "voicemail": { "properties": { "leave_message": { "const": true } } } } },
+      "then": { "properties": { "voicemail": { "required": ["leave_message", "text"] } } }
+    },
+    {
+      "if": { "properties": { "tier": { "const": 1 } } },
+      "then": { "required": ["brief_id", "tier", "operator", "recipient", "message", "voicemail", "closing"] }
+    }
+  ]
+}
