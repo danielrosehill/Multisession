@@ -179,7 +179,7 @@ Recurring checks expire after 7 days and live only in the reader's session.
 | `multisession:send` | A | Write a message into another repo's `a2a/`, ping its session if exactly one is running, append updates later. |
 | `multisession:inbox` | B | Read open messages, act on them, set requested reminders, record what was done. Also picks up founding briefs. |
 | `multisession:spawn-session` | A | The building block: open a named Claude in a split or tab, in any directory, and send it a pointer. |
-| `multisession:breakout` | A | A side job that needs its own repo, with an option for a model project and Hugging Face dataset: create it on GitHub (public by default), write a founding brief into its `a2a/`, spawn and ping a session there, go back to work. |
+| `multisession:breakout` | A | A side job that needs its own repo, with an option for a model project and Hugging Face dataset: create it on GitHub (public by default), write a founding brief into its `a2a/`, spawn and ping a session there, go back to work. Or "new repo, I'll explain": create it and open a Claude there with no brief. |
 | `multisession:restore` | A | Bring back sessions: lost in a crash, the last N, or picked from a menu. |
 | `multisession:guard` | A | Keep close prompts on, block KWin-crashing commands, diagnose what killed a window. |
 | `multisession:setup` | A | Shell hooks, Konsole settings and profile, watches, here or over SSH, and what an update needs. |
