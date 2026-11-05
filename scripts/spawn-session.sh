@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# spawn-fresh.sh: start a new, named Claude Code session in a split of the Konsole pane this
+# spawn-session.sh: start a new, named Claude Code session in a split of the Konsole pane this
 # script runs in, or in a new tab. Prints one JSON line.
 #
-# Usage: spawn-fresh.sh --name NAME [--dir DIR] [--session-id UUID] [--layout split|tab]
+# Usage: spawn-session.sh --name NAME [--dir DIR] [--session-id UUID] [--layout split|tab]
 #                       [--direction right|down] [--wait SECONDS]
 #   --name        peer name for the new session (claude --name); this is its SendMessage address
 #   --dir         working directory for it (default: current directory)
@@ -66,7 +66,33 @@ for v in $views; do
   W setCurrentView "$v" >/dev/null
   [ "$(W currentSession | tr -d '[:space:]')" = "$me" ] && { view=$v; break; }
 done
-[ "$mode" = tab ] || [ -n "$view" ] || fail "could not find this session's view in the window"
+
+# setCurrentView only moves focus while the Konsole window is active, so with another app in front
+# the walk above finds nothing. Session and view ids both rise with creation, so the Nth session
+# by id sits in the Nth view by id. That is inferred, and a wrong guess would split a pane it
+# has not checked, so it is used only if every pane is a plain shell. Otherwise: a tab.
+plain_shell() {
+  local argv b a; mapfile -d '' -t argv < "/proc/$1/cmdline" 2>/dev/null || return 1
+  [ "${#argv[@]}" -gt 0 ] || return 1
+  b=$(basename -- "${argv[0]#-}")
+  case "$b" in bash|zsh|fish|sh|dash|ksh) ;; *) return 1 ;; esac
+  for a in "${argv[@]:1}"; do [ "$a" = "-c" ] && return 1; done
+  return 0
+}
+if [ "$mode" = split ] && [ -z "$view" ]; then
+  mapfile -t sess < <(W sessionList | sort -n)
+  mapfile -t vs < <(printf '%s\n' $views | sort -n)
+  safe=true; [ "${#sess[@]}" -eq "${#vs[@]}" ] || safe=false
+  for s in "${sess[@]}"; do
+    p=$("$q" "$KONSOLE_DBUS_SERVICE" "/Sessions/$s" org.kde.konsole.Session.processId 2>/dev/null | tr -d '[:space:]')
+    plain_shell "$p" || safe=false
+  done
+  if [ "$safe" = true ]; then
+    for i in "${!sess[@]}"; do [ "${sess[$i]}" = "$me" ] && view=${vs[$i]}; done
+  fi
+  if [ -n "$view" ]; then why="Konsole not focused: view matched by creation order"
+  else mode=tab; why="Konsole not focused and the view could not be matched safely"; fi
+fi
 
 # Pending launch file, claimed by the new pane's shell hook.
 ld="${XDG_RUNTIME_DIR:-/tmp}/multisession-launch"; mkdir -p "$ld"; chmod 700 "$ld"

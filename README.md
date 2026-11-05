@@ -7,13 +7,13 @@ the same file.
 
 No server, no broker, no shared meeting place. The target repo's folder is the mailbox.
 
-## Spawn fresh (`multisession:spawn-fresh`, v0.7.1)
+## Spawn fresh (`multisession:spawn-fresh`, v0.8.0)
 
 The context cleaner. At the end of a task, split this Konsole pane, start a new Claude Code
 session in it with a name and session ID chosen up front (`claude --name … --session-id …`),
 write `HANDOVER.md`, send it with `SendMessage`, and close this pane. `--layout tab` opens a new
 tab instead. A pane running a command rather than a plain shell always gets a tab, because a
-split would re-run that command. Script: `scripts/spawn-fresh.sh`.
+split would re-run that command. Script: `scripts/spawn-session.sh`.
 
 ## Handover and close (`multisession:handover`, v0.5.0)
 
@@ -140,7 +140,9 @@ Recurring checks expire after 7 days and live only in the reader's session.
 | `multisession:handover` | A | Hand the work to a running peer: write `HANDOVER.md` to the local or Drive space, `SendMessage` a pointer, close this Konsole pane. |
 | `multisession:send` | A | Write a message into another repo's `a2a/`, ping its session if exactly one is running, append updates later. |
 | `multisession:inbox` | B | Read open messages, act on them, set requested reminders, record what was done. Also picks up founding briefs. |
-| `multisession:breakout` | A | An idea that needs its own repo: create the repo, write a founding brief into its `a2a/`, spawn and ping a session there, go back to work. |
+| `multisession:spawn-session` | A | The building block: open a named Claude in a split or tab, in any directory, and send it a pointer. |
+| `multisession:breakout` | A | A side job that needs its own repo: create it on GitHub (private by default), write a founding brief into its `a2a/`, spawn and ping a session there, go back to work. |
+| `multisession:breakout-model` | A | The same, plus a Hugging Face dataset, for bootstrapping a model project. |
 
 Plus `hooks/hooks.json`: a SessionStart hook running `scripts/a2a-inbox.sh`, which lists open
 messages for the repo the session started in and prints nothing when there are none.

@@ -64,7 +64,7 @@ own exit status decides whether Konsole closes the pane).
 
 # Splitting a pane and launching a session in it
 
-Used by `skills/spawn-fresh` through `scripts/spawn-fresh.sh`. Tested 2026-10-31, same versions.
+Used by `skills/spawn-fresh` through `scripts/spawn-session.sh`. Tested 2026-10-31, same versions.
 
 1. **Find this pane's view.** `Window.createSplit(viewId, horizontal)` takes a *view* ID, and
    nothing maps a session to its view (session IDs and view IDs are separate counters; in the
@@ -72,6 +72,15 @@ Used by `skills/spawn-fresh` through `scripts/spawn-fresh.sh`. Tested 2026-10-31
    `Window.setCurrentView(v)` then `Window.currentSession()` for each view in
    `Window.viewHierarchy` until it returns `${KONSOLE_DBUS_SESSION##*/}`. `horizontal=true`
    puts the new pane to the right (`(2)[2|3]`), `false` below it.
+
+   **That walk needs Konsole to be the active window.** With another app in front,
+   `setCurrentView` returns `true` but focus does not move, and `currentSession` stays put
+   (`setCurrentSession` likewise). Found 2026-11-05, with Kate active. The fallback sorts sessions
+   and views by id and pairs them, since both rise with creation. That is inferred: it matched the
+   one pair known from the walk (session 4, view 3), and a split made that way landed beside the
+   right pane. It is used only when every pane is a plain shell, because a wrong guess would split
+   an unchecked pane and could re-run its command. Otherwise the script opens a tab, and
+   `mode_reason` says which happened.
 2. **Tell the new pane what to run.** `Session.runCommand`/`sendText` are refused (see above).
    So the spawner writes `$XDG_RUNTIME_DIR/multisession-launch/pending.<ns>.<pid>` with a
    `# target: <service> <window>` line and a `# created:` epoch, then splits. The new pane's
@@ -87,7 +96,7 @@ Used by `skills/spawn-fresh` through `scripts/spawn-fresh.sh`. Tested 2026-10-31
 In the first sandbox test the source pane was `konsole -e run.sh`, where `run.sh` called the
 spawner. Every new pane re-ran it and split again, giving 18 views in a few seconds before it was
 killed. For a real user, a pane running `claude --resume X` (as Session-Restore opens them) would
-resume X a second time. So `spawn-fresh.sh` reads `/proc/<pane pid>/cmdline` and splits only
+resume X a second time. So `spawn-session.sh` reads `/proc/<pane pid>/cmdline` and splits only
 when the pane is a plain shell (bash/zsh/fish/sh/dash/ksh, no `-c`). Otherwise it opens a new
 tab with `Window.newSession("", dir)`, which starts the profile's plain shell (tested: a
 `bash -c` pane got a tab, and the launch ran in it).

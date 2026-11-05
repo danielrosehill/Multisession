@@ -27,17 +27,15 @@ built in: `claude --name` (sets the peer name `SendMessage` addresses), `claude 
 
 ## 0. Preconditions
 
-- In Konsole, with the shell hooks installed. `spawn-fresh.sh` checks both and says what is
+- In Konsole, with the shell hooks installed. `spawn-session.sh` checks both and says what is
   missing. If the hooks are missing, offer `scripts/install-shell-hooks.sh`, which appends one
   guarded line to `~/.bashrc`. Don't run it unasked. It takes effect in **new** panes; the tab or
   split it makes is new, so it works straight away.
 - Commit and push what should survive. Anything left uncommitted goes in the handover's `## State`.
 
 Scripts are in this plugin's `scripts/`. If `CLAUDE_PLUGIN_ROOT` is empty (skill read from a
-catalogue), use a local clone of https://github.com/danielrosehill/Multisession, or fetch
-`scripts/spawn-fresh.sh`, `scripts/close-pane.sh`, `scripts/close-pane-worker.sh` and
-`shell/multisession-rc.sh` from
-`https://raw.githubusercontent.com/danielrosehill/Multisession/master/`, keeping the same layout.
+catalogue), `multisession:spawn-session` says where to get them, plus `scripts/close-pane.sh` and
+`scripts/close-pane-worker.sh`.
 
 ## 1. Write the handover first
 
@@ -51,39 +49,16 @@ at it rather than copying it.
 The receiver starts with **nothing**: no memory of this conversation, possibly not the same
 skills. Name skills by catalogue id or `SKILL.md` path, not by bare name.
 
-## 2. Launch the new session
+## 2. Launch and hand over
 
-```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/spawn-fresh.sh" --name <name> --dir <dir> --layout <split|tab>
-```
+Follow `multisession:spawn-session` with `name`, `dir`, `layout`, `direction`, and this message:
 
-What it does: it writes a one-shot launch file and splits this pane (`--direction` picks the side),
-or opens a new tab with `--layout tab`. The new shell claims the file and runs
-`claude --name <name> --session-id <uuid>` in `<dir>`, then the script waits until the new
-Claude's messaging socket is up. A split is refused when this pane's process isn't a plain shell
-(a `claude --resume` pane, a `bash -c` pane), because the split would copy that command, so it
-opens a tab instead (`"mode":"tab"`).
+`Handover from <me>. You were started for this task. Read <absolute path>/HANDOVER.md and take it from there. Record what you did under ## Done in that file. I am closing my session; don't reply to me.`
 
-Read the JSON:
+Leave out the closing sentence if `close: no`. If that skill stops at a failure, stop here too and
+keep this pane open.
 
-- `"launched":true, "messaging_ready":true`: go on.
-- `"launched":true, "messaging_ready":false`: the pane is up but Claude is slow, or stopped at a
-  prompt (folder trust, login). Run `ListAgents`. If `<name>` isn't listed, tell the user to look
-  at the new pane, and stop. Don't close this pane.
-- `"launched":false`: report `reason` and stop. The handover file is written; the user can start
-  a session there and point it at the file.
-
-## 3. Hand over
-
-1. `ListAgents` and confirm a row named exactly `<name>`. If two rows share it, use the `[ref]`
-   form, and pick the one whose ref matches the new session if it shows.
-2. `SendMessage` to `<name>`:
-   `Handover from <me>. You were started for this task. Read <absolute path>/HANDOVER.md and take it from there. Record what you did under ## Done in that file. I am closing my session; don't reply to me.`
-   Leave out the closing sentence if `close: no`.
-3. If the send errors, retry once. If it still fails, keep this pane open, give the user the file
-   path and the new pane, and stop.
-
-## 4. Close this pane
+## 3. Close this pane
 
 If `close: yes`, run this as your final tool call:
 
@@ -94,7 +69,7 @@ If `close: yes`, run this as your final tool call:
 Same rules as in the `handover` skill (section 4). It closes only this pane, and it refuses if
 it can't prove the pane is its own.
 
-## 5. Report
+## 4. Report
 
 One line:
 
@@ -103,6 +78,4 @@ One line:
 ## Hard limits
 
 - **Nothing this session was denied.** Permission boundaries are per session.
-- **One new session per call.** Never loop on spawn. If a launch fails, report it and stop.
-  Retrying blind stacks up panes.
 - **No secret values** in the handover or the message.
