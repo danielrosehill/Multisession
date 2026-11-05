@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "agent-junction": {
-      "type": "streamable-http",
-      "url": "http://localhost:4200/mcp"
-    }
-  }
-}
