@@ -1,6 +1,6 @@
 ---
 name: breakout
-description: Offload a side job into its own new GitHub repo and its own Claude session, then get back to the work in flight. Creates the repo (public by default, private if it will hold private material or if asked), writes the starting plan, opens a new Claude in a split or tab, and hands it over. Use on "create a new repo for this and hand it over", "side job", "offload this", "spin this off", "new public repo and start Claude on it", "wait, separate idea", "this is a different project", "that should be its own repo", "unrelated, but while I think of it", or work whose deliverable would not live in this repo's tree. If it also needs a Hugging Face dataset, use breakout-model. Do NOT use for work that belongs in this repo; file that as a task. Do NOT use for carrying the current work into a clean session; that is spawn-fresh. Do NOT use to tell an existing repo's agent something; that is send. Also a model project: a repo plus a linked Hugging Face dataset ("new repo and a Hugging Face dataset for this", "bootstrap a model project").
+description: Offload a side job into its own new GitHub repo and its own Claude session, then get back to the work in flight. Creates the repo (public by default, private if it will hold private material or if asked), writes the starting plan, opens a new Claude in a split or tab, and hands it over. Use on "create a new repo for this and hand it over", "side job", "offload this", "spin this off", "new public repo and start Claude on it", "wait, separate idea", "this is a different project", "that should be its own repo", "unrelated, but while I think of it", "new repo, I'll explain", "start a new repo and open Claude there", "create the repo and I'll brief it", or work whose deliverable would not live in this repo's tree. If it also needs a Hugging Face dataset, use breakout-model. Do NOT use for work that belongs in this repo; file that as a task. Do NOT use for carrying the current work into a clean session; that is spawn-fresh. Do NOT use to tell an existing repo's agent something; that is send. Also a model project: a repo plus a linked Hugging Face dataset ("new repo and a Hugging Face dataset for this", "bootstrap a model project").
 ---
 
 # breakout
@@ -24,9 +24,23 @@ Take them from the request. Don't ask for anything with a default.
 | `owner` | GitHub owner | the user's own account, or the business account for business work |
 | `name` | repo name, Train-Case | from the subject, at maximum specificity |
 | `layout` | `split` or `tab` | `split` |
+| `brief` | `written`, or `user` (the user will explain in the new session) | `written`; `user` when the user says they will explain and has not yet |
 
 Public is the default. If the brief or repo will hold private material (credentials, personal or
 client data, private hostnames), or the user said private, choose `private` and say so in one line.
+
+## Brief from the user: "new repo, I'll explain"
+
+The user wants a repo and a Claude open in it, and will explain the task to that session themselves.
+Don't ask them to explain here first, and don't invent a brief from the repo name. Skip sections 1 and 2:
+
+1. Create the repo as in section 3, without the `a2a/` brief. If the user created it already, or it
+   exists and is empty, use it.
+2. Launch with `multisession:spawn-session`: `dir` the repo, `name` the folder name lowercased, your
+   `layout`, and **no `message`**. The new session waits for the user.
+3. Say one line: "`<owner/repo>` (<visibility>) is open in the pane beside this one: explain the task there."
+
+Seeding the repo is then that session's job, once it has heard the task.
 
 ## 1. Apply the decision rule
 
