@@ -94,6 +94,12 @@ stays open. With the receipt, run this as your final tool call:
 Same rules as in the `handover` skill (section 4). It closes only this pane, and it refuses if
 it can't prove the pane is its own.
 
+**Closing is the last step, not an offer.** Once the receipt is in, close without being asked. Don't
+leave the pane open for the user to read a report, don't tell them they can close it, and don't reply
+to the receipt with a message of your own. Put anything they need in the handover, for the new session
+to carry. The one-line report below goes out in the same turn as the close. Keep the pane only with
+`close: no`, or if the user said so.
+
 ## 4. Report
 
 One line:
