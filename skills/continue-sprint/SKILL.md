@@ -1,6 +1,6 @@
 ---
 name: continue-sprint
-description: Refresh the context mid-sprint. Carry a long, multi-step piece of work into a fresh session without losing decisions: writes a sprint handover (what Daniel decided, in his words where it matters, plus state, plan and traps), then starts the new session and closes this one. Use on "continue sprint", "context refresh", "refresh the context and carry on", "we're running tight on context", "summarise where we are and continue in a new session". For a finished task with an unrelated next one, use spawn-fresh.
+description: Refresh the context mid-sprint. Carry a long, multi-step piece of work into a fresh session without losing decisions: writes a sprint handover (what the user decided, in their words where it matters, plus state, plan and traps), then starts the new session and closes this one. Use on "continue sprint", "context refresh", "refresh the context and carry on", "we're running tight on context", "summarise where we are and continue in a new session". For a finished task with an unrelated next one, use spawn-fresh.
 ---
 
 # continue-sprint

@@ -138,7 +138,7 @@ Recurring checks expire after 7 days and live only in the reader's session.
 |---|---|---|
 | `multisession:spawn-fresh` | A | Split this pane (or open a new tab), launch a new named Claude, hand it the next task, close this pane. |
 | `multisession:continue-sprint` | A | Refresh the context mid-sprint: write a handover of decisions, approvals, state and traps, then carry on in a new session |
-| `multisession:compose` | A | Mix actions in one request: handover, sessions in a split, tab or window, a plain terminal, Dolphin, keep or close this pane |
+| `multisession:compose` | A | Mix actions in one request: handover, sessions in a split, tab or window, a plain terminal, Dolphin, an editor or a URL, keep or close this pane, or a saved preset |
 | `multisession:handover` | A | Hand the work to a running peer: write `HANDOVER.md` to the local or Drive space, `SendMessage` a pointer, close this Konsole pane. |
 | `multisession:send` | A | Write a message into another repo's `a2a/`, ping its session if exactly one is running, append updates later. |
 | `multisession:inbox` | B | Read open messages, act on them, set requested reminders, record what was done. Also picks up founding briefs. |
