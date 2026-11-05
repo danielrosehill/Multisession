@@ -1,9 +1,4 @@
----
-name: breakout-model
-description: Offload a new AI model project as a side job: create a GitHub repo and a Hugging Face dataset together, link them, open a new Claude in a split or tab, and hand it the starting plan. Use on "new repo and a Hugging Face dataset for this", "bootstrap a model project", "spin up a model development project", "new fine-tune project", "repo plus HF dataset and hand it over". For a repo with no dataset, use breakout.
----
-
-# breakout-model
+# A model project
 
 `multisession:breakout` plus a Hugging Face dataset, for starting an AI model development project.
 Follow that skill throughout. This one adds the dataset, and changes only what is listed here.

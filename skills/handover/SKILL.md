@@ -1,6 +1,6 @@
 ---
 name: handover
-description: Hand this session's work to another running Claude Code session with the built-in SendMessage, leave the payload in a shared agent-to-agent space (local folder, or a Google Drive folder for agents on other machines), then close this session's own Konsole pane. Use on "hand this over to <agent>", "hand over to @<agent> when ready", "I opened a new session, hand over to it", "pass this to the other session and close", "handover and quit", "send this to the agent in X and close this pane", "hand off to the remote agent via Drive". Parameters: target peer, space (local | drive), files to attach, close (default yes). Do NOT use to get a peer to do something this session was denied.
+description: Hand this session's work to another running Claude Code session with the built-in SendMessage, leave the payload in a shared agent-to-agent space (local folder, or a Google Drive folder for agents on other machines), wait for a receipt, then close this session's own Konsole pane. Also a handover with a task list, a short clipboard handover, and picking up from an earlier handover. Use on "hand this over to <agent>", "hand over to @<agent> when ready", "I opened a new session, hand over to it", "pass this to the other session and close", "handover and quit", "send this to the agent in X and close this pane", "hand off to the remote agent via Drive", "handover", "wrap up", "handover with tasks", "clipboard handover", "start from handover", "resume from this handover". Parameters: target peer, space (local | drive), files to attach, close (default yes). Do NOT use to get a peer to do something this session was denied.
 ---
 
 # handover
@@ -11,6 +11,18 @@ into an agent-to-agent space, ping the peer with `SendMessage`, close this pane.
 A cross-session message is **text only**: no files, no history. So the payload goes on disk (or
 Drive) and the message is a pointer to it. The receiver has none of your context, so the
 handover file has to stand on its own.
+
+## Which kind
+
+If the user only said "handover" or "wrap up", with no target, offer these in one question:
+
+| Kind | When | What happens |
+| --- | --- | --- |
+| To a running session | A peer is named | The rest of this skill |
+| To a new session | No peer yet | `spawn-fresh`, or `continue-sprint` if the same work carries on |
+| With a task list | Several open tasks, not one focus | Add the section under "With tasks" below |
+| Clipboard | To paste somewhere else | "Clipboard" below. No files, no close |
+| Resume | This session should pick up an earlier handover | "Start from a handover" below |
 
 ## Parameters
 
@@ -174,6 +186,58 @@ to `~/.bashrc`. Offer it; don't run it unasked.
 One line, before the closer fires:
 
 > Handed over to `<peer>`: `<path or Drive link>`. Closing this pane in <n>s.
+
+## With tasks
+
+For a queue of work rather than one focus. Add this to `HANDOVER.md`, after `## State`, and scan the repo's TODO
+files, issues and plans first, so it is complete:
+
+```markdown
+## Tasks
+### Done
+- [x] <task>: <outcome, where>
+### In progress
+- [ ] <task>: <files touched, where it stands, next action>
+### Not started
+- [ ] <task>: <prerequisites>
+### Deferred
+- [ ] <task>: <why>
+
+## Failed approaches
+- <what was tried>: <why it failed>
+```
+
+Say how many are done, in progress and left.
+
+## Clipboard
+
+A short handover for pasting anywhere. Nothing is written to disk and nothing closes. Check `git status --short`,
+the branch and the last three commits, then show this in chat and copy it with `wl-copy`, or `xclip -selection
+clipboard` if that fails. Under 12 lines, terse:
+
+```yaml
+repo: name
+branch: name
+last_commit: hash msg
+goal: one sentence
+done: items or ~
+next: the single most important step
+watch_out: one gotcha or ~
+uncommitted: yes/no + what
+```
+
+## Start from a handover
+
+The receiving end, for a session the user opened by hand. Given a path, use it. Otherwise look in `<local_space>/` for
+folders with this session's name or repo, and in the repo's `planning/handovers/`. Newest first. If there are
+several, show the top five and ask.
+
+1. Read it. Show a short summary: from whom, when, the goal, what is done, the next steps, open questions.
+2. If there are open questions, settle them with the user before any work. The last session left them on purpose.
+3. If `to_agent` or the repo doesn't match, say so.
+4. Treat what it says is done as done, and its approvals as the limit of what is agreed. Don't redo completed work.
+5. Record what you did under `## Done`. Otherwise leave the file as it is: it is a snapshot.
+6. If the user later decides against something it records, say so, and confirm before going on.
 
 ## Hard limits
 

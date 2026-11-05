@@ -1,6 +1,6 @@
 ---
 name: compose
-description: Run any mix of session and desktop actions from one plain request - hand over, start one or more Claude sessions in a split, tab or new window, open a plain terminal, Dolphin, an editor or a URL, keep or close this pane, or run a saved preset. Use when the user combines them, e.g. "hand over to a new window, open Dolphin and a terminal there, then self-destruct", "two new sessions side by side", "new session below and keep me open", "open this folder in Dolphin and Konsole", "my sprint layout", "save this as a preset".
+description: Run any mix of session and desktop actions from one plain request - hand over, start one or more Claude sessions in a split, tab, new window or 2/4-pane grid, open a plain terminal, Dolphin, an editor or a URL, notify the user, keep or close this pane, or run a preset. Use when the user combines them, e.g. "hand over to a new window, open Dolphin and a terminal there, then self-destruct", "two new sessions side by side", "new session below and keep me open", "open this folder in Dolphin and Konsole", "new Claude here", "new Claude at <path>", "Claude grid", "Claude and a shell", "terminal here", "VS Code here", "my sprint layout", "save this as a preset".
 ---
 
 # compose
@@ -18,10 +18,12 @@ Scripts are in this plugin's `scripts/`. `spawn-session` says where to find them
 | `session` | A new named Claude | `spawn-session.sh --name N --dir D --layout L --direction R` |
 | `send` | Point a session at its handover | `spawn-session` section 2, with `notify_when_idle: true`. A session started with no task needs none |
 | `receipt` | Wait for a session to confirm it read the handover | `handover` section 3a. Implied before `close` |
+| `grid` | A new window of 2 or 4 panes, each a named Claude or a plain shell | `grid.sh --dir D --panes a,b,-,-`. `-` is a plain shell. Order: left, right, or top left, top right, bottom left, bottom right |
 | `terminal` | A plain shell in a folder, no Claude | `spawn-session.sh --terminal --dir D --layout L --direction R` |
 | `files` | Dolphin in a folder | `open-files.sh D` |
 | `editor` | The user's editor in a folder | `setsid -f ${VISUAL:-code} D`, or the `editor` key in the config |
 | `browser` | Open a URL | `xdg-open URL` |
+| `notify` | Tell the user something is done | `notify` skill. A phone call needs the go-ahead that skill describes |
 | `close` | Self-destruct this pane | `close-pane.sh --delay 6`, as in `continue-sprint` section 5 |
 | `keep` | Leave this pane open | Do nothing |
 
@@ -74,6 +76,20 @@ preset and run it as a plan: the rules above still apply, so `close` must still 
 request win over the preset, so "my sprint layout, but keep me open" swaps `close` for `keep`. "What
 presets do I have" lists them.
 
+## Built-in presets
+
+Plans that need no saving. A saved preset of the same name wins. `{dir}` is the current directory, unless the user
+named one. Names are the user's words for them, so match loosely.
+
+| Say | Plan |
+| --- | --- |
+| "New Claude here", "jump to a new Claude" | `session window` -> `close`. For when this session can't pick up a change without a restart. Nothing carries over, so offer a `handover` if context matters. It has no handover, so `close` needs only the window to be up |
+| "New Claude at <path>" | `session window` in that path -> `keep`. An optional first task goes through `send` |
+| "Claude grid", "two Claudes", "four Claudes" | `grid` with 2 or 4 names. Default 2. Any other count: ask, because the layout is a guess |
+| "Claude and a shell" | `grid --panes <name>,-` |
+| "Terminal here" | `terminal window` -> `keep` |
+| "VS Code here", "open in VS Code" | `editor` -> `keep`. If `code` is missing, try `codium`, else report it |
+
 ## Examples
 
 "Hand over in a new window, open Dolphin and a terminal there, then self-destruct":
@@ -95,5 +111,6 @@ handover x2 -> session (split, right) -> send -> session (split, right) -> send 
 - Permission boundaries are per session. A new session gets nothing this one was denied.
 - No secret values in a handover or a message.
 - Never close another session's pane.
+- `grid` always opens a new window. Konsole has no way to re-tile an existing one from here.
 - A split needs this pane to be a plain shell, or it becomes a tab. A pane inside a `window` action's
   Claude session is not one until Claude exits, so splits made from it become tabs.

@@ -1,11 +1,44 @@
 # Multisession
 
-Asynchronous messages between Claude Code agents working in different repositories. Agent A writes
-a markdown file into repo B's `a2a/` folder. Agent B finds it when its session starts, or straight
-away if A pings it. B acts on it, sets any reminders it asks for, and writes what it did back into
-the same file.
+Coordinate Claude Code sessions: start them, hand work between them, lay them out in Konsole, bring them
+back after a crash, guard against losing them, reach the user when they are away, and run sessions on other
+machines. Thirteen skills, with options inside them rather than a skill per variation.
 
-No server, no broker, no shared meeting place. The target repo's folder is the mailbox.
+Sessions on one machine talk through Claude Code's own `SendMessage`. Repos talk through a mailbox: agent A
+writes a markdown file into repo B's `a2a/` folder, and B finds it when its session starts. No server, no broker.
+
+Konsole on KDE Plasma is what the launching, closing and guard parts need. `send`, `inbox`, `notify` and
+`remote` work anywhere.
+
+## A handover closes on a receipt
+
+A successful `SendMessage` means the message reached a session, not that its Claude read it. So `handover`,
+`spawn-fresh`, `continue-sprint` and `compose` ask the receiver for one line back, and close the pane only then. A
+timeout, an idle notice or a held message keeps the pane open. Details: `skills/handover`, section 3a.
+
+## Layouts (`multisession:compose`)
+
+One plain request becomes a list of actions. Built in: "new Claude here", "new Claude at <path>", "Claude grid" (2 or
+4 panes, `scripts/grid.sh`), "Claude and a shell", "terminal here", "VS Code here". Your own presets go in
+`~/.config/multisession/config.json`.
+
+## Restore and guard
+
+`multisession:restore` finds the sessions that died together in a crash, or the last N, or ones picked from a menu,
+and resumes each in its repo. `multisession:guard` keeps Konsole's close prompts on, blocks commands known to crash
+KWin through a PreToolUse hook, watches for KWin crashes, and works out what killed a window. Incidents are in
+`docs/incidents/`.
+
+## Notify (`multisession:notify`)
+
+A desktop notification, or a phone call through Vapi saying what Claude is stuck on. Calls need a real reason, and
+the script refuses without one. `--dry-run` prints the payload and calls nothing.
+
+## Remote (`multisession:remote`)
+
+Check, install, log in, sync settings, connect a skills library, start background sessions, message them, move a
+session across and clone repos, on any machine you can reach. Your hosts live in your config. Parts marked
+**Template** came from one setup, so adapt them.
 
 ## Spawn fresh (`multisession:spawn-fresh`, v0.8.0)
 
@@ -130,7 +163,7 @@ Recurring checks expire after 7 days and live only in the reader's session.
 | `note` | Information the other agent should have. |
 | `request` | Something the other agent should do. |
 | `founding` | The first brief of a brand-new repo, written by `multisession:breakout` when an idea does not belong in the current repo. See [`docs/breakout.md`](docs/breakout.md). |
-| `handover` | To the next session in the *same* repo. For the full session-to-session handover workflow, Claude-Hopper does more. |
+| `handover` | To the next session in the *same* repo. For the full session-to-session workflow, use `multisession:handover`. |
 
 ## Skills
 
@@ -143,11 +176,16 @@ Recurring checks expire after 7 days and live only in the reader's session.
 | `multisession:send` | A | Write a message into another repo's `a2a/`, ping its session if exactly one is running, append updates later. |
 | `multisession:inbox` | B | Read open messages, act on them, set requested reminders, record what was done. Also picks up founding briefs. |
 | `multisession:spawn-session` | A | The building block: open a named Claude in a split or tab, in any directory, and send it a pointer. |
-| `multisession:breakout` | A | A side job that needs its own repo: create it on GitHub (private by default), write a founding brief into its `a2a/`, spawn and ping a session there, go back to work. |
-| `multisession:breakout-model` | A | The same, plus a Hugging Face dataset, for bootstrapping a model project. |
+| `multisession:breakout` | A | A side job that needs its own repo, with an option for a model project and Hugging Face dataset: create it on GitHub (public by default), write a founding brief into its `a2a/`, spawn and ping a session there, go back to work. |
+| `multisession:restore` | A | Bring back sessions: lost in a crash, the last N, or picked from a menu. |
+| `multisession:guard` | A | Keep close prompts on, block KWin-crashing commands, diagnose what killed a window. |
+| `multisession:setup` | A | Shell hooks, Konsole settings and profile, watches, here or over SSH, and what an update needs. |
+| `multisession:notify` | A | Reach the user by desktop notification or Vapi phone call. |
+| `multisession:remote` | A | Run and work with Claude on other machines. |
 
 Plus `hooks/hooks.json`: a SessionStart hook running `scripts/a2a-inbox.sh`, which lists open
-messages for the repo the session started in and prints nothing when there are none.
+messages for the repo the session started in and prints nothing when there are none, and a PreToolUse
+hook running `scripts/compositor_guard.py`, which blocks Bash commands known to crash KWin.
 
 ## Install
 
@@ -200,3 +238,8 @@ Research scans, newest first: [`research/`](research/).
 ## License
 
 MIT.
+
+## History
+
+Multisession absorbed Claude-Hopper, Session-Restore and Claude-Konsole-Setup on 2026-11-05, and took the phone
+call from Claude-PA and the remote procedures from Claude-Server-Harness-Plugin. See [`docs/prior-art.md`](docs/prior-art.md).
