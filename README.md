@@ -7,13 +7,13 @@ the same file.
 
 No server, no broker, no shared meeting place. The target repo's folder is the mailbox.
 
-## Spawn fresh (`multisession:spawn-fresh`, v0.7.0)
+## Spawn fresh (`multisession:spawn-fresh`, v0.7.1)
 
-The context cleaner. At the end of a task, open a new Konsole tab, start a new Claude Code
+The context cleaner. At the end of a task, split this Konsole pane, start a new Claude Code
 session in it with a name and session ID chosen up front (`claude --name … --session-id …`),
-write `HANDOVER.md`, send it with `SendMessage`, and close this pane. `--layout split` splits
-this pane instead, unless it runs a command rather than a plain shell, because a split would
-re-run that command. Script: `scripts/spawn-fresh.sh`.
+write `HANDOVER.md`, send it with `SendMessage`, and close this pane. `--layout tab` opens a new
+tab instead. A pane running a command rather than a plain shell always gets a tab, because a
+split would re-run that command. Script: `scripts/spawn-fresh.sh`.
 
 ## Handover and close (`multisession:handover`, v0.5.0)
 
@@ -136,7 +136,7 @@ Recurring checks expire after 7 days and live only in the reader's session.
 
 | Skill | Side | What it does |
 |---|---|---|
-| `multisession:spawn-fresh` | A | Open a new tab (or split), launch a new named Claude, hand it the next task, close this pane. |
+| `multisession:spawn-fresh` | A | Split this pane (or open a new tab), launch a new named Claude, hand it the next task, close this pane. |
 | `multisession:handover` | A | Hand the work to a running peer: write `HANDOVER.md` to the local or Drive space, `SendMessage` a pointer, close this Konsole pane. |
 | `multisession:send` | A | Write a message into another repo's `a2a/`, ping its session if exactly one is running, append updates later. |
 | `multisession:inbox` | B | Read open messages, act on them, set requested reminders, record what was done. Also picks up founding briefs. |
