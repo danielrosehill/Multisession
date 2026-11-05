@@ -1,6 +1,6 @@
 ---
 name: continue-sprint
-description: Refresh the context mid-sprint. Carry a long, multi-step piece of work into a fresh session without losing decisions: writes a sprint handover (what the user decided, in their words where it matters, plus state, plan and traps), then starts the new session and closes this one. Use on "continue sprint", "context refresh", "refresh the context and carry on", "we're running tight on context", "summarise where we are and continue in a new session". For a finished task with an unrelated next one, use spawn-fresh.
+description: Refresh the context mid-sprint. Carry a long, multi-step piece of work into a fresh session without losing decisions: writes a sprint handover (what the user decided, in their words where it matters, plus state, plan and traps), then starts the new session and closes this one. Use on "continue sprint", "context refresh", "refresh the context and carry on", "we're running tight on context", "summarise where we are and continue in a new session", "great progress, let's move to the next part of the sprint", "next phase in a new session". For a finished task with an unrelated next one, use spawn-fresh.
 ---
 
 # continue-sprint
@@ -8,6 +8,26 @@ description: Refresh the context mid-sprint. Carry a long, multi-step piece of w
 spawn-fresh moves on to the next task. This skill keeps the same task going. What gets lost when a
 long sprint changes session is not the code, which is in git, but the conversation: what the user
 chose, what was tried and ruled out, and which approvals are still open. This skill writes those down.
+
+## Objective
+
+This is a context-pruning operation. The aim is a new **top-level** Claude session, the orchestrator
+for this repo from here on, with a clean context. It is not a subagent: a subagent works under this
+session and reports back, so this thread's context stays and keeps growing. The new session replaces
+this one. It talks to the user directly and can run its own subagents.
+
+The right moment is a natural break between parts of the sprint: one phase has landed, and the next
+is about to start ("great progress, let's move to the next part"). That is when the thread's history
+stops being useful, and when a handover can be comprehensive, because the phase is shipped and the
+state is settled. A handover cut mid-step passes on loose ends.
+
+So work towards that point. If the user asks for this while work is in hand, or you see a break
+coming, finish the current part, ship it, write the full handover, and then go. You can decide that
+yourself, without asking at each step. If the user says to do it now, do it now, and if context is
+running out, don't wait for the break: the handover then says exactly where the step stands.
+
+The handover is the only thing that crosses over, so it has to carry everything the next orchestrator
+needs.
 
 ## Parameters
 
