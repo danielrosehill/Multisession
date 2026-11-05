@@ -43,8 +43,13 @@ case "$direction" in right) horiz=true ;; down) horiz=false ;; *) fail "--direct
 # A new window needs neither the shell hook nor this pane: Konsole takes the command directly.
 # --separate gives it its own process, so its shell can be found from the PID. `exec bash` keeps a
 # plain shell in the window once Claude exits.
+# The window inherits this process's environment, unlike a split or tab, which get a clean shell from
+# Konsole. Run from inside Claude, that includes CLAUDE_CODE_CHILD_SESSION and the parent's session ID, so
+# the new Claude counts as a child and never registers as a peer, though its socket still opens.
+# Seen 2026-11-05. So the Claude and Konsole variables are removed, and ready means registered.
 if [ "$layout" = window ]; then
   command -v konsole >/dev/null || fail "konsole not found"
+  while IFS='=' read -r v _; do case "$v" in CLAUDE*|KONSOLE_*) unset "$v" ;; esac; done < <(env)
   if [ "$terminal" = true ]; then
     setsid -f konsole --separate --workdir "$dir" >/dev/null 2>&1 || fail "konsole did not start"
     echo "{\"launched\":true,\"name\":\"$name\",\"dir\":\"$dir\",\"mode\":\"window\",\"terminal\":true}"
@@ -57,7 +62,7 @@ if [ "$layout" = window ]; then
   while [ -z "${MULTISESSION_LAUNCH_CMD:-}" ] && [ "$(date +%s)" -lt "$end" ]; do
     for sh in $(pgrep -P "$kp" 2>/dev/null); do
       for c in $(pgrep -P "$sh" -x claude 2>/dev/null); do
-        cpid=$c; [ -S "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/cc-socks/$c.sock" ] && { ready=true; break 3; }
+        cpid=$c; [ -f "$HOME/.claude/sessions/$c.json" ] && { ready=true; break 3; }
       done
     done
     sleep 0.5
