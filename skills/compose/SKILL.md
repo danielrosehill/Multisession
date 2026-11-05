@@ -1,6 +1,6 @@
 ---
 name: compose
-description: Run any mix of session and desktop actions from one plain request - hand over, start one or more Claude sessions in a split, tab or new window, open a plain terminal or Dolphin in a folder, keep or close this pane. Use when the user combines them, e.g. "hand over to a new window, open Dolphin and a terminal there, then self-destruct", "two new sessions side by side", "new session below and keep me open", "open this folder in Dolphin and Konsole".
+description: Run any mix of session and desktop actions from one plain request - hand over, start one or more Claude sessions in a split, tab or new window, open a plain terminal, Dolphin, an editor or a URL, keep or close this pane, or run a saved preset. Use when the user combines them, e.g. "hand over to a new window, open Dolphin and a terminal there, then self-destruct", "two new sessions side by side", "new session below and keep me open", "open this folder in Dolphin and Konsole", "my sprint layout", "save this as a preset".
 ---
 
 # compose
@@ -19,6 +19,8 @@ Scripts are in this plugin's `scripts/`. `spawn-session` says where to find them
 | `send` | Point a session at its handover | `spawn-session` section 2. A session started with no task needs none |
 | `terminal` | A plain shell in a folder, no Claude | `spawn-session.sh --terminal --dir D --layout L --direction R` |
 | `files` | Dolphin in a folder | `open-files.sh D` |
+| `editor` | The user's editor in a folder | `setsid -f ${VISUAL:-code} D`, or the `editor` key in the config |
+| `browser` | Open a URL | `xdg-open URL` |
 | `close` | Self-destruct this pane | `close-pane.sh --delay 6`, as in `continue-sprint` section 5 |
 | `keep` | Leave this pane open | Do nothing |
 
@@ -47,6 +49,28 @@ A folder not named means the directory of the session being started, or the curr
    actions ran. Never retry blind: that stacks up panes. A failed `terminal` or `files` is only reported.
 5. **`close` is earned.** Follow the conditions in `continue-sprint` section 5. If the user did not say
    `close`, keep the pane, unless the recipe they named closes by default.
+
+## Presets
+
+A preset is a saved plan, kept with the user's own settings in `~/.config/multisession/config.json`,
+never in this plugin, so it survives updates. "Save this as my sprint layout" adds one:
+
+```json
+{
+  "presets": {
+    "sprint": {
+      "description": "Carry on in a new window, with the repo open beside it",
+      "plan": ["handover", "session window", "send", "files", "terminal window", "close"]
+    }
+  }
+}
+```
+
+Steps use the notation below. `{dir}` and `{url}` in a step are filled in from the request or the current
+directory. Merge into the file, keeping its other keys. On "my sprint layout", or `compose sprint`, read the
+preset and run it as a plan: the rules above still apply, so `close` must still be earned. Words in the
+request win over the preset, so "my sprint layout, but keep me open" swaps `close` for `keep`. "What
+presets do I have" lists them.
 
 ## Examples
 
