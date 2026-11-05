@@ -64,7 +64,7 @@ own exit status decides whether Konsole closes the pane).
 
 # Splitting a pane and launching a session in it
 
-Used by `skills/fresh-session` through `scripts/spawn-split.sh`. Tested 2026-10-31, same versions.
+Used by `skills/spawn-fresh` through `scripts/spawn-fresh.sh`. Tested 2026-10-31, same versions.
 
 1. **Find this pane's view.** `Window.createSplit(viewId, horizontal)` takes a *view* ID, and
    nothing maps a session to its view (session IDs and view IDs are separate counters; in the
@@ -87,7 +87,7 @@ Used by `skills/fresh-session` through `scripts/spawn-split.sh`. Tested 2026-10-
 In the first sandbox test the source pane was `konsole -e run.sh`, where `run.sh` called the
 spawner. Every new pane re-ran it and split again, giving 18 views in a few seconds before it was
 killed. For a real user, a pane running `claude --resume X` (as Session-Restore opens them) would
-resume X a second time. So `spawn-split.sh` reads `/proc/<pane pid>/cmdline` and splits only
+resume X a second time. So `spawn-fresh.sh` reads `/proc/<pane pid>/cmdline` and splits only
 when the pane is a plain shell (bash/zsh/fish/sh/dash/ksh, no `-c`). Otherwise it opens a new
 tab with `Window.newSession("", dir)`, which starts the profile's plain shell (tested: a
 `bash -c` pane got a tab, and the launch ran in it).

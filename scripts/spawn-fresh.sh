@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
-# spawn-split.sh: split the Konsole pane this script runs in and start a new, named Claude Code
-# session in the new pane. Prints one JSON line.
+# spawn-fresh.sh: start a new, named Claude Code session in a new Konsole tab, or in a split of
+# the pane this script runs in. Prints one JSON line.
 #
-# Usage: spawn-split.sh --name NAME [--dir DIR] [--session-id UUID] [--direction right|down]
-#                       [--wait SECONDS]
+# Usage: spawn-fresh.sh --name NAME [--dir DIR] [--session-id UUID] [--layout tab|split]
+#                       [--direction right|down] [--wait SECONDS]
 #   --name        peer name for the new session (claude --name); this is its SendMessage address
 #   --dir         working directory for it (default: current directory)
 #   --session-id  conversation UUID (claude --session-id); generated if omitted
-#   --direction   right (side by side, default) or down (stacked)
+#   --layout      tab (default) or split
+#   --direction   for a split: right (side by side, default) or down (stacked)
 #   --wait        seconds to wait for the new session's messaging socket (default 45)
 #   MULTISESSION_LAUNCH_CMD (env, testing only): run this instead of claude
 #
@@ -15,12 +16,13 @@
 # Konsole refuses Session.runCommand/sendText by default, so the new pane's own shell claims a
 # pending launch file this script writes. Exit 0 = launched; 2 = refused/failed (JSON says why).
 set -u
-name=""; dir="$PWD"; sid=""; direction=right; wait_s=45
+name=""; dir="$PWD"; sid=""; layout=tab; direction=right; wait_s=45
 while [ $# -gt 0 ]; do
   case "$1" in
     --name) name="$2"; shift 2 ;;
     --dir) dir="$2"; shift 2 ;;
     --session-id) sid="$2"; shift 2 ;;
+    --layout) layout="$2"; shift 2 ;;
     --direction) direction="$2"; shift 2 ;;
     --wait) wait_s="$2"; shift 2 ;;
     *) echo "{\"launched\":false,\"reason\":\"unknown argument $1\"}"; exit 2 ;;
@@ -32,6 +34,7 @@ fail() { echo "{\"launched\":false,\"reason\":\"$1\"${2:+,$2}}"; exit 2; }
 dir=$(readlink -f "$dir"); [ -d "$dir" ] || fail "no such directory: $dir"
 [ -n "$sid" ] || sid=$(cat /proc/sys/kernel/random/uuid)
 [[ "$sid" =~ ^[0-9a-f-]{36}$ ]] || fail "--session-id must be a UUID"
+case "$layout" in tab|split) ;; *) fail "--layout must be tab or split" ;; esac
 case "$direction" in right) horiz=true ;; down) horiz=false ;; *) fail "--direction must be right or down" ;; esac
 [ -n "${KONSOLE_DBUS_SERVICE:-}" ] && [ -n "${KONSOLE_DBUS_SESSION:-}" ] && [ -n "${KONSOLE_DBUS_WINDOW:-}" ] \
   || fail "not running inside a Konsole session"
@@ -49,9 +52,9 @@ panepid=$("$q" "$KONSOLE_DBUS_SERVICE" "$KONSOLE_DBUS_SESSION" org.kde.konsole.S
 [[ "$panepid" =~ ^[0-9]+$ ]] || fail "Konsole did not return this pane's process id"
 mapfile -d '' -t pargv < "/proc/$panepid/cmdline"
 pbase=$(basename -- "${pargv[0]#-}")
-mode=split; why=""
-case "$pbase" in bash|zsh|fish|sh|dash|ksh) ;; *) mode=tab; why="pane runs '$pbase', not a shell" ;; esac
-for a in "${pargv[@]:1}"; do [ "$a" = "-c" ] && { mode=tab; why="pane runs '$pbase -c ...'"; }; done
+mode=$layout; why=""
+[ "$layout" = tab ] || case "$pbase" in bash|zsh|fish|sh|dash|ksh) ;; *) mode=tab; why="pane runs '$pbase', not a shell" ;; esac
+[ "$layout" = tab ] || for a in "${pargv[@]:1}"; do [ "$a" = "-c" ] && { mode=tab; why="pane runs '$pbase -c ...'"; }; done
 # Fallback: a new tab (Window.newSession) starts the profile's plain shell, never a copy.
 
 # Find this session's view (split mode only). There is no session->view getter; setCurrentView(v) then
