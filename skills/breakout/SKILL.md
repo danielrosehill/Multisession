@@ -1,6 +1,6 @@
 ---
 name: breakout
-description: Offload a side job into its own new GitHub repo and its own Claude session, then get back to the work in flight. Creates the repo (public by default, private if it will hold private material or if asked), writes the starting plan, opens a new Claude in a split or tab, and hands it over. Use on "create a new repo for this and hand it over", "side job", "offload this", "spin this off", "new public repo and start Claude on it", "wait, separate idea", "this is a different project", "that should be its own repo", "unrelated, but while I think of it", or work whose deliverable would not live in this repo's tree. If it also needs a Hugging Face dataset, use breakout-model. Do NOT use for work that belongs in this repo; file that as a task. Do NOT use for carrying the current work into a clean session; that is spawn-fresh. Do NOT use to tell an existing repo's agent something; that is send.
+description: Offload a side job into its own new GitHub repo and its own Claude session, then get back to the work in flight. Creates the repo (public by default, private if it will hold private material or if asked), writes the starting plan, opens a new Claude in a split or tab, and hands it over. Use on "create a new repo for this and hand it over", "side job", "offload this", "spin this off", "new public repo and start Claude on it", "wait, separate idea", "this is a different project", "that should be its own repo", "unrelated, but while I think of it", or work whose deliverable would not live in this repo's tree. If it also needs a Hugging Face dataset, use breakout-model. Do NOT use for work that belongs in this repo; file that as a task. Do NOT use for carrying the current work into a clean session; that is spawn-fresh. Do NOT use to tell an existing repo's agent something; that is send. Also a model project: a repo plus a linked Hugging Face dataset ("new repo and a Hugging Face dataset for this", "bootstrap a model project").
 ---
 
 # breakout
@@ -113,3 +113,8 @@ One line to the user, then straight back to the task in flight:
 - **Never delegate a commit in the origin repo** to the new agent.
 - **The tracks do not reconverge.** If the new work turns out to be a dependency of the current
   sprint, it was not a breakout — it was an interruption, and it was misclassified.
+
+## A model project
+
+If the side job is an AI model project ("new repo and a Hugging Face dataset for this", "bootstrap a model
+project"), follow `references/model.md`, which adds a dataset and links the two.

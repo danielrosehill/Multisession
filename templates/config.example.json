@@ -8,5 +8,24 @@
     "max_file_mb": 10
   },
   "close_delay_s": 6,
-  "receipt_timeout_s": 300
+  "receipt_timeout_s": 300,
+  "presets": {},
+  "notify": {
+    "call_enabled": false,
+    "user_name": "<first name>",
+    "user_phone": "<E.164>",
+    "vapi": {
+      "assistant_id": "<id>",
+      "phone_number_id": "<id>"
+    },
+    "contacts": []
+  },
+  "remote": {
+    "hosts": {
+      "<alias>": {
+        "ssh": "<ssh alias or user@host>",
+        "exec_tool": "<optional>"
+      }
+    }
+  }
 }

@@ -1,7 +1,7 @@
 {
   "name": "multisession",
-  "version": "0.11.1",
-  "description": "Agent-to-agent work between Claude Code sessions. spawn-fresh: split this Konsole pane, launch a new named Claude session (claude --name/--session-id) and hand it the next task over SendMessage, for a clean context. handover: pass this session's work to another running session with the built-in SendMessage, leave the payload in an agent-to-agent space (a local folder, or a Google Drive folder for agents on other machines), and close this session's own Konsole pane. send/inbox: asynchronous messages written into another repo's a2a/ folder, with SessionStart pickup, reminders and living messages. breakout: offload a side job into a new GitHub repo with its own session; breakout-model adds a Hugging Face dataset. spawn-session: the building block that opens a named Claude in a split or tab.",
+  "version": "0.12.0",
+  "description": "Coordinate Claude Code sessions: start them, hand work between them with a confirmed receipt, lay them out in Konsole, restore them after a crash, guard against losing them, notify the user by desktop or phone, and run them on other machines. Skills: spawn-fresh, continue-sprint, compose, spawn-session, handover, send, inbox, breakout, restore, guard, setup, notify, remote.",
   "author": {
     "name": "Daniel Rosehill",
     "url": "https://github.com/danielrosehill"
@@ -12,16 +12,22 @@
     "a2a",
     "agent-to-agent",
     "breakout",
+    "crash-recovery",
     "cross-repo",
     "cross-session",
     "google-drive",
+    "grid",
     "handoff",
     "handover",
     "konsole",
     "mailbox",
     "multisession",
+    "notifications",
     "polling",
     "reminders",
-    "sendmessage"
+    "remote-control",
+    "sendmessage",
+    "session-restore",
+    "vapi"
   ]
 }

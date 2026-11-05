@@ -12,12 +12,16 @@ trap '[ -e "${XDG_RUNTIME_DIR:-/tmp}/multisession-close.$$" ] && { rm -f "${XDG_
 #    default, so a new split cannot be told what to run. Instead the spawner writes a pending
 #    launch file naming this Konsole window, then splits; the new pane's shell claims it here
 #    (atomic mv, so exactly one pane takes it) and runs it at its first prompt.
+#    A file for a window that does not exist yet (scripts/grid.sh) names the Konsole PID instead,
+#    with "# target-pid:", because KONSOLE_DBUS_SERVICE is a unique bus name such as :1.3107 that
+#    cannot be known before the window starts. Konsole is this shell's parent.
 _multisession_launch=""
 if [ -n "${KONSOLE_DBUS_WINDOW:-}" ] && [ -d "${XDG_RUNTIME_DIR:-/tmp}/multisession-launch" ]; then
   _ms_d="${XDG_RUNTIME_DIR:-/tmp}/multisession-launch"; _ms_now=$(date +%s)
   for _ms_f in "$_ms_d"/pending.*; do
     [ -f "$_ms_f" ] || continue
-    grep -qxF "# target: ${KONSOLE_DBUS_SERVICE:-} ${KONSOLE_DBUS_WINDOW}" "$_ms_f" || continue
+    grep -qxF "# target: ${KONSOLE_DBUS_SERVICE:-} ${KONSOLE_DBUS_WINDOW}" "$_ms_f" \
+      || grep -qxF "# target-pid: $PPID" "$_ms_f" || continue
     _ms_c=$(sed -n 's/^# created: //p' "$_ms_f")
     if [ $(( _ms_now - ${_ms_c:-0} )) -gt 60 ]; then rm -f "$_ms_f"; continue; fi
     mv "$_ms_f" "$_ms_d/claimed.$$" 2>/dev/null || continue
