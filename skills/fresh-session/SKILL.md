@@ -1,6 +1,6 @@
 ---
 name: fresh-session
-description: Start the next task in a fresh Claude Code session with a clean context. Splits this Konsole pane, launches a new named Claude there (its own peer name and session ID), writes a handover, sends it with the built-in SendMessage, and optionally closes this pane. Use on "start fresh", "new session for the next task", "break out to a new session", "context is full, carry on in a new one", "split and hand over", "clear the decks and continue". For an idea that needs its own new repo, use breakout instead; for handing to a session that is already running, use handover.
+description: Start the next task in a fresh Claude Code session with a clean context. Splits this Konsole pane, launches a new named Claude there (its own peer name and session ID), writes a handover, sends it with the built-in SendMessage, and optionally closes this pane. Use on "start fresh", "new session for the next task", "break out to a new session", "context is full, carry on in a new one", "split and hand over", "clear the decks and continue", "clean up the context", "open another Claude here and hand over to it", "new instance in this repo and pass it this". For an idea that needs its own new repo, use breakout instead; for handing to a session that is already running, use handover.
 ---
 
 # fresh-session
@@ -44,7 +44,8 @@ Use the handover format and the `local` space from the `handover` skill (section
 `<local_space>/YYYY-MM-DD_HHMM_<me>_to_<name>_<slug>/HANDOVER.md` (default local space
 `~/a2a-workspace`; config `~/.config/multisession/config.json`). Set `to_agent: <name>`, and
 put the next task under `## Goal` and `## Next steps`. Write it before launching, so the new
-session never waits on you.
+session never waits on you. If the repo already holds the plan (a sprint file, a planning doc), point
+at it rather than copying it.
 
 The receiver starts with **nothing**: no memory of this conversation, possibly not the same
 skills. Name skills by catalogue id or `SKILL.md` path, not by bare name.
