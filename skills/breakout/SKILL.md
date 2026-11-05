@@ -1,6 +1,6 @@
 ---
 name: breakout
-description: Offload a side job into its own new GitHub repo and its own Claude session, then get back to the work in flight. Creates the repo (private by default, public if asked), writes the starting plan, opens a new Claude in a split or tab, and hands it over. Use on "create a new repo for this and hand it over", "side job", "offload this", "spin this off", "new public repo and start Claude on it", "wait, separate idea", "this is a different project", "that should be its own repo", "unrelated, but while I think of it", or work whose deliverable would not live in this repo's tree. If it also needs a Hugging Face dataset, use breakout-model. Do NOT use for work that belongs in this repo; file that as a task. Do NOT use for carrying the current work into a clean session; that is spawn-fresh. Do NOT use to tell an existing repo's agent something; that is send.
+description: Offload a side job into its own new GitHub repo and its own Claude session, then get back to the work in flight. Creates the repo (public by default, private if it will hold private material or if asked), writes the starting plan, opens a new Claude in a split or tab, and hands it over. Use on "create a new repo for this and hand it over", "side job", "offload this", "spin this off", "new public repo and start Claude on it", "wait, separate idea", "this is a different project", "that should be its own repo", "unrelated, but while I think of it", or work whose deliverable would not live in this repo's tree. If it also needs a Hugging Face dataset, use breakout-model. Do NOT use for work that belongs in this repo; file that as a task. Do NOT use for carrying the current work into a clean session; that is spawn-fresh. Do NOT use to tell an existing repo's agent something; that is send.
 ---
 
 # breakout
@@ -20,13 +20,13 @@ Take them from the request. Don't ask for anything with a default.
 
 | Parameter | Values | Default |
 |---|---|---|
-| `visibility` | `private` or `public` | `private` |
+| `visibility` | `private` or `public` | `public` |
 | `owner` | GitHub owner | the user's own account, or the business account for business work |
 | `name` | repo name, Train-Case | from the subject, at maximum specificity |
 | `layout` | `split` or `tab` | `split` |
 
-`public` must come from the user. If they said public, that is the approval, so don't ask again. If
-you only think it should be public, make it private and say so.
+Public is the default. If the brief or repo will hold private material (credentials, personal or
+client data, private hostnames), or the user said private, choose `private` and say so in one line.
 
 ## 1. Apply the decision rule
 
@@ -64,11 +64,11 @@ recorded as a question is useful; one left implicit becomes a wrong assumption.
 
 ## 3. Create the repo
 
-Follow `repo-mgmt:create-repo` (catalogue id `skill:repo-mgmt/create-repo`): check the name is free,
+Follow `repo-mgmt:create-repo` (catalogue id `skill:repo-mgmt/create-repo`, public by default; pass `--private` when `visibility` is private): check the name is free,
 pick the **narrowest topic group that fits**, scaffold, create on GitHub, push, verify. A breakout
 that lands in a junk-drawer directory has reproduced the burial problem this skill exists to
-prevent. If that skill is not available, do the same with `gh repo create --source=. --push`, after
-a first commit.
+prevent. If that skill is not available, do the same with `gh repo create --<visibility> --source=. --push`, after
+a first commit. Before the first push to a public repo, run `~/.local/bin/gitleaks dir . --redact --no-banner`.
 
 Check first that the subject has no repo already. Adding to an existing repo beats a parallel one:
 if one exists, this is `multisession:send` to that repo, not a breakout.
@@ -77,10 +77,10 @@ Then add the brief as a multisession message, `a2a/YYYY-MM-DD_founding-brief.md`
 `kind: founding` and `status: open` in the front matter (format: multisession:send, or
 `docs/protocol.md`), plus the `a2a/README.md`.
 
+- **Public repo (default):** add `a2a/` to `.gitignore`, then commit and push that. The brief comes
+  from a private conversation, so it stays on disk. Check that the README and description carry
+  nothing private either.
 - **Private repo:** commit and push the `a2a/` folder.
-- **Public repo:** add `a2a/` to `.gitignore`, then commit and push that. The brief comes from a
-  private conversation, so it stays on disk. Check that the README and description carry nothing
-  private either.
 
 Putting the brief in `a2a/` means the new session's SessionStart hook announces it, so the
 receiving agent finds it whether or not your ping lands.
