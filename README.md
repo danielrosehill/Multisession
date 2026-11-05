@@ -34,6 +34,9 @@ KWin through a PreToolUse hook, watches for KWin crashes, and works out what kil
 A desktop notification, or a phone call through Vapi saying what Claude is stuck on. Calls need a real reason, and
 the script refuses without one. `--dry-run` prints the payload and calls nothing.
 
+Calling anyone but you has stricter rules, from the Claude-Voice-Notifier design: it says it is an AI first, you approve a
+brief every time, it only rings people on your list and within their waking hours, and it can't take a message back.
+
 ## Remote (`multisession:remote`)
 
 Check, install, log in, sync settings, connect a skills library, start background sessions, message them, move a
@@ -242,4 +245,4 @@ MIT.
 ## History
 
 Multisession absorbed Claude-Hopper, Session-Restore and Claude-Konsole-Setup on 2026-11-05, and took the phone
-call from Claude-PA and the remote procedures from Claude-Server-Harness-Plugin. See [`docs/prior-art.md`](docs/prior-art.md).
+call from Claude-PA, the call rules from Claude-Voice-Notifier and the remote procedures from Claude-Server-Harness-Plugin. See [`docs/prior-art.md`](docs/prior-art.md).

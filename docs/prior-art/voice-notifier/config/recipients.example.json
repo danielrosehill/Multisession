@@ -1,0 +1,26 @@
+{
+  "_comment": "The allowlist (D7). Claude may only dial a key that appears here, and the brief's number must match this number exactly. Seed it manually; `voice-notifier recipients add` exists but is a convenience, not a bypass. Numbers below are the reserved +1 555 01xx range and are not routable.",
+  "recipients": [
+    {
+      "key": "self",
+      "name": "Alex",
+      "relationship": "the operator's own mobile — the only entry that should exist until this has stopped being embarrassing",
+      "number": "+15550100",
+      "language": "en-GB"
+    },
+    {
+      "key": "sam",
+      "name": "Sam",
+      "relationship": "Alex's partner",
+      "number": "+15550143",
+      "language": "en-GB"
+    },
+    {
+      "key": "robin",
+      "name": "Robin",
+      "relationship": "Alex's parent-in-law. Older, not especially comfortable with technology. Keep it warm and unhurried, and do not use the word 'agent'.",
+      "number": "+15550178",
+      "language": "en-GB"
+    }
+  ]
+}
