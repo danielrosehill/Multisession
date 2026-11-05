@@ -23,7 +23,7 @@ built in: `claude --name` (sets the peer name `SendMessage` addresses), `claude 
 | `dir` | where the new session works | current directory |
 | `layout` | `split` (a new pane beside this one, Konsole's split view) or `tab` | `split` |
 | `direction` | for a split: `right` (side by side) or `down` (stacked) | `right` |
-| `close` | close this pane once the handover is acknowledged as sent | `yes` |
+| `close` | close this pane once the new session confirms it read the handover | `yes` |
 
 ## 0. Preconditions
 
@@ -53,14 +53,15 @@ skills. Name skills by catalogue id or `SKILL.md` path, not by bare name.
 
 Follow `multisession:spawn-session` with `name`, `dir`, `layout`, `direction`, and this message:
 
-`Handover from <me>. You were started for this task. Read <absolute path>/HANDOVER.md and take it from there. Record what you did under ## Done in that file. I am closing my session; don't reply to me.`
+`Handover from <me>. You were started for this task. Read <absolute path>/HANDOVER.md and take it from there. Record what you did under ## Done in that file. Once you have read it, send me one line through SendMessage to confirm. I close my pane only after that.`
 
-Leave out the closing sentence if `close: no`. If that skill stops at a failure, stop here too and
+Send it with `notify_when_idle: true`. Leave out the closing sentence if `close: no`. If that skill stops at a failure, stop here too and
 keep this pane open.
 
 ## 3. Close this pane
 
-If `close: yes`, run this as your final tool call:
+If `close: yes`, wait for the receipt as in the `handover` skill (section 3a). No receipt means the pane
+stays open. With the receipt, run this as your final tool call:
 
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/close-pane.sh" --delay 6
@@ -73,7 +74,7 @@ it can't prove the pane is its own.
 
 One line:
 
-> Started `<name>` (session `<uuid>`) in a split <right/below> / a new tab, handed over `<path>`. Closing this pane in 6s.
+> Started `<name>` (session `<uuid>`) in a split <right/below> / a new tab, handed over `<path>`, receipt in. Closing this pane in 6s.
 
 ## Hard limits
 
