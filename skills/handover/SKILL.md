@@ -1,6 +1,6 @@
 ---
 name: handover
-description: Hand this session's work to another running Claude Code session with the built-in SendMessage, leave the payload in a shared agent-to-agent space (local folder, or a Google Drive folder for agents on other machines), then close this session's own Konsole pane. Use on "hand this over to <agent>", "pass this to the other session and close", "handover and quit", "send this to the agent in X and close this pane", "hand off to the remote agent via Drive". Parameters: target peer, space (local | drive), files to attach, close (default yes). Do NOT use to get a peer to do something this session was denied.
+description: Hand this session's work to another running Claude Code session with the built-in SendMessage, leave the payload in a shared agent-to-agent space (local folder, or a Google Drive folder for agents on other machines), then close this session's own Konsole pane. Use on "hand this over to <agent>", "hand over to @<agent> when ready", "I opened a new session, hand over to it", "pass this to the other session and close", "handover and quit", "send this to the agent in X and close this pane", "hand off to the remote agent via Drive". Parameters: target peer, space (local | drive), files to attach, close (default yes). Do NOT use to get a peer to do something this session was denied.
 ---
 
 # handover
@@ -30,7 +30,11 @@ for local, and for `drive` ask the user for a folder ID, then write the config.
 
 ## 1. Resolve the target
 
-Run `ListAgents`. Note this session's own name ("This session is <name>").
+Run `ListAgents`. Note this session's own name ("This session is <name>"). Drop a leading `@` from
+the name given. "When ready" means finish and push the step in hand first, then hand over.
+
+The user often opens the new session themselves, in the same repo, and names it. That is this skill.
+If they want you to open it, that is `fresh-session`.
 
 - The peer named, or the one clear match for a loose name ("the podcast agent"), is the target.
 - Two candidates: ask. No match: say so and offer to write the handover anyway and close
@@ -78,6 +82,10 @@ Each file and what it is.
 ## Done
 (the receiver writes here)
 ```
+
+**If the repo already holds the plan** (a sprint file, a planning doc, a skill that carries the
+procedure), point at it instead of copying it: `HANDOVER.md` gives the path, what to read in what
+order, and only what the file lacks. Two copies drift. Update that file first so it is current.
 
 Before writing, commit and push anything that should survive (standing habits apply). Whatever
 is left uncommitted goes in `## State`, because closing the pane does not discard files, but the
