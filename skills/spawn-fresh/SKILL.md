@@ -22,8 +22,11 @@ the work is shipped and the state is settled. A handover cut mid-step passes on 
 
 So work towards that point. If the user asks for this while work is in hand, or you see a break
 coming, finish the sprint to its wrap-up, ship it, write the full handover, and then go. You can
-decide that yourself, without asking at each step. If the user says to do it now, do it now. If
-context runs out before the sprint can wrap up, that is `continue-sprint`.
+decide that yourself, without asking at each step. If the user says to do it now, do it now.
+
+This skill and `continue-sprint` share this objective. The difference is what comes next: a new task
+is this skill; the next part of the same sprint, where decisions and approvals must carry over, is
+`continue-sprint`.
 
 The handover is the only thing that crosses over, so it has to carry everything the next orchestrator
 needs. Side tasks (below) are the exception: this session stays, and nothing is being pruned.
