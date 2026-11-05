@@ -16,7 +16,8 @@ Scripts are in this plugin's `scripts/`. `spawn-session` says where to find them
 | --- | --- | --- |
 | `handover` | Write the task to a file | `handover` skill format, or `continue-sprint` section 2 if the same work carries on. `spawn-fresh` section 1 for a new task |
 | `session` | A new named Claude | `spawn-session.sh --name N --dir D --layout L --direction R` |
-| `send` | Point a session at its handover | `spawn-session` section 2. A session started with no task needs none |
+| `send` | Point a session at its handover | `spawn-session` section 2, with `notify_when_idle: true`. A session started with no task needs none |
+| `receipt` | Wait for a session to confirm it read the handover | `handover` section 3a. Implied before `close` |
 | `terminal` | A plain shell in a folder, no Claude | `spawn-session.sh --terminal --dir D --layout L --direction R` |
 | `files` | Dolphin in a folder | `open-files.sh D` |
 | `editor` | The user's editor in a folder | `setsid -f ${VISUAL:-code} D`, or the `editor` key in the config |
@@ -47,7 +48,8 @@ A folder not named means the directory of the session being started, or the curr
 3. **Each session needs its own name,** and its own handover if it has its own task.
 4. **Stop on failure.** If a `session` or `send` fails, stop, keep this pane open, and report which
    actions ran. Never retry blind: that stacks up panes. A failed `terminal` or `files` is only reported.
-5. **`close` is earned.** Follow the conditions in `continue-sprint` section 5. If the user did not say
+5. **`close` is earned.** It needs a receipt from every session handed work in this plan, so ask for one
+   in each `send`. No receipt means the pane stays open. Then follow `continue-sprint` section 5. If the user did not say
    `close`, keep the pane, unless the recipe they named closes by default.
 
 ## Presets
@@ -77,7 +79,7 @@ presets do I have" lists them.
 "Hand over in a new window, open Dolphin and a terminal there, then self-destruct":
 
 ```
-handover -> session (window) -> send -> files -> terminal (window) -> report -> close
+handover -> session (window) -> send -> files -> terminal (window) -> receipt -> report -> close
 ```
 
 "Two new sessions side by side on these tasks, and keep me open":

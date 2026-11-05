@@ -25,7 +25,7 @@ Take them from the request; ask only for the target if it is ambiguous.
 
 Config: `${XDG_CONFIG_HOME:-~/.config}/multisession/config.json`, shaped like
 `templates/config.example.json` in this plugin (`local_space`, `drive.folder_id`,
-`drive.account`, `drive.max_file_mb`, `close_delay_s`). If it is missing, use `~/a2a-workspace`
+`drive.account`, `drive.max_file_mb`, `close_delay_s`, `receipt_timeout_s`). If it is missing, use `~/a2a-workspace`
 for local, and for `drive` ask the user for a folder ID, then write the config.
 
 ## 1. Resolve the target
@@ -109,15 +109,40 @@ receiver needs to know they are there.
 
 One `SendMessage` to the target, plain text, self-contained:
 
-- local: `Handover from <me>: read <absolute path>/HANDOVER.md and take it from there. I am closing my session.`
-- drive: `Handover from <me>: read HANDOVER.md in Drive folder <folder name> (folder ID <id>, <link>; file ID <id>). Attachments are in the same folder. I am closing my session.`
+- local: `Handover from <me>: read <absolute path>/HANDOVER.md and take it from there. Once you have read it, send me one line through SendMessage to confirm. I close my pane only after that.`
+- drive: `Handover from <me>: read HANDOVER.md in Drive folder <folder name> (folder ID <id>, <link>; file ID <id>). Attachments are in the same folder. Once you have read it, send me one line through SendMessage to confirm. I close my pane only after that.`
+
+Pass `notify_when_idle: true` on that send when the peer is on this machine (section 3a says why).
+Leave the request for a receipt out if `close: no`.
 
 If the send errors, retry once. If it still fails, don't close the pane. Report the file location
 and the error, and stop.
 
+## 3a. Wait for the receipt
+
+A successful send means the message reached that session, not that its Claude read it. It can sit in
+an inbox, or be held for the other user's approval. So a pane closes on a **receipt**: one line back
+from the receiver saying it has read the handover. `spawn-fresh`, `continue-sprint` and `compose` use
+this section too.
+
+**Receiver:** when a message asks for a receipt, read the handover first, then send one line back to
+the `from` address, before starting the work. The sender's pane stays open until you do.
+
+**Sender:**
+
+1. After the send, start a timer as a background command, `sleep <receipt_timeout_s, default 300>`, and
+   end your turn. The receipt arrives as a new message and wakes this session.
+2. **Receipt arrived:** go to section 4.
+3. **No receipt, and any of these:** the timer ran out, an idle notice arrived first (the peer finished
+   its turn without replying), or a `[Cross-session delivery notice]` says the message was held or
+   refused. Do not close. Tell the user which it was, and leave the pane open. The handover is on disk,
+   so nothing is lost. Never close on a timeout.
+4. **A peer that cannot reply** (a cloud session): no receipt can come. Say so, and leave the pane for
+   the user to close.
+
 ## 4. Close this pane
 
-Skip if `close: no`. Otherwise, as your **final tool call**:
+Skip if `close: no`. Close only after a receipt (section 3a). Then, as your **final tool call**:
 
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/close-pane.sh" --delay <close_delay_s, default 6>
@@ -157,4 +182,5 @@ One line, before the closer fires:
 - **No secret values** in the handover or the message.
 - **Only ever close your own pane**, through `close-pane.sh`. Never signal other processes or
   Konsole sessions by hand.
+- **No receipt, no close.** A send is not a receipt. A timeout keeps the pane open.
 - Don't delete the handover after sending. The receiver records what it did under `## Done`.

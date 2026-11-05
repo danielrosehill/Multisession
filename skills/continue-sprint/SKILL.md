@@ -50,7 +50,9 @@ correctly, and without asking something the user has already answered? If not, a
 
 Follow `spawn-session` with `name`, `dir`, `layout` and `direction`, and this message:
 
-`Handover from <me>. You are continuing a sprint. Read <absolute path>/HANDOVER.md and take it from there. Treat ## Approvals as the limit of what is already agreed. Record what you did under ## Done in that file. Don't reply to me.`
+`Handover from <me>. You are continuing a sprint. Read <absolute path>/HANDOVER.md and take it from there. Treat ## Approvals as the limit of what is already agreed. Record what you did under ## Done in that file. Once you have read it, send me one line through SendMessage to confirm. I close my pane only after that.`
+
+Send it with `notify_when_idle: true`. Leave out the closing sentence if `close: no`.
 
 If the launch or the send fails, stop here and keep this pane open, because nothing has taken the work over yet.
 
@@ -58,15 +60,16 @@ If the launch or the send fails, stop here and keep this pane open, because noth
 
 Tell the user what the new session is called, where the handover is, its first step, and anything
 still waiting on them. Do this before closing, as text alongside the final tool call: nothing can be
-said afterwards.
+said afterwards. If the receipt has not come, say that instead, and that the pane is staying open.
 
 ## 5. Close this pane
 
 The self-destruct. `close` defaults to `yes`, so a normal run ends with this session gone. Pass
 `close: no`, or stop here, if the user still wants this session.
 
-Close only when all of these hold: the send in section 3 succeeded, the new session appears in
-`ListAgents`, and no background agent or task of yours is still running. Then, as your **final tool call**:
+Close only when all of these hold: the new session has sent its receipt (`handover` skill, section 3a),
+and no background agent or task of yours is still running, other than the receipt timer. No receipt
+means the pane stays open. Then, as your **final tool call**:
 
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/close-pane.sh" --delay 6
