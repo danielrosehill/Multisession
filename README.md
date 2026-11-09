@@ -228,11 +228,11 @@ found writes into *another* repository's mailbox with no server.
 
 ## Lineage
 
-Fourth iteration of one idea, all in this repo since 2026-10-22
-([`iterations/README.md`](iterations/README.md)):
+Fourth iteration of one idea, iterations 1-2 now in Claude-Net
+(moved to [Claude-Net `prior-art/`](https://github.com/danielrosehill/Claude-Net/tree/main/prior-art) on 2026-11-09):
 
-1. **Agent Junction** (Feb 2026), the first: an encrypted synchronous MCP bus. [`iterations/01-agent-junction/`](iterations/01-agent-junction/)
-2. **Agent Relay** (May 2026): a LAN relay server with file transfer. [`iterations/02-agent-relay/`](iterations/02-agent-relay/)
+1. **Agent Junction** (Feb 2026), the first: an encrypted synchronous MCP bus. [Claude-Net `prior-art/01-agent-junction`](https://github.com/danielrosehill/Claude-Net/tree/main/prior-art/01-agent-junction)
+2. **Agent Relay** (May 2026): a LAN relay server with file transfer. [Claude-Net `prior-art/02-agent-relay`](https://github.com/danielrosehill/Claude-Net/tree/main/prior-art/02-agent-relay)
 3. **Claude-Breakout** (Aug 2026), this repo's former name: idea → new repo over native `SendMessage`. Now the `founding` kind; old README at [`docs/breakout.md`](docs/breakout.md).
 4. **multisession** (Oct 2026): the file mailbox.
 
