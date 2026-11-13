@@ -25,6 +25,14 @@ a file, never the payload.
 
 Say "tab" or "split" and it is honoured. Otherwise use `split`.
 
+**The user's own words come first.** If `~/.config/multisession/config.json` has a `vocabulary` key,
+map the request with it before using the defaults above. It lists `phrases` (what they say → `layout` and
+`direction`) and a `default` for when they say nothing. Users differ, and some call side-by-side panes a
+"horizontal split" or even a "horizontal tab". When a phrase isn't in either list, pick the closest match
+and say in one line which way you went. When the user corrects you, add their phrase to `vocabulary`
+(merge, keep the other keys), so the next session gets it right.
+
+
 ## 1. Launch
 
 ```bash

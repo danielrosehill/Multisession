@@ -1,6 +1,6 @@
 {
   "name": "multisession",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "description": "Coordinate Claude Code sessions: start them, hand work between them with a confirmed receipt, lay them out in Konsole, restore them after a crash, guard against losing them, notify the user by desktop or phone, and run them on other machines. Skills: spawn-fresh, continue-sprint, compose, spawn-session, handover, send, inbox, breakout, restore, guard, setup, notify, remote.",
   "author": {
     "name": "Daniel Rosehill",

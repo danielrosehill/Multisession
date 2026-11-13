@@ -27,5 +27,43 @@
         "exec_tool": "<optional>"
       }
     }
+  },
+  "vocabulary": {
+    "_doc": "Optional. Your own words for where a new session goes; wins over the skills' built-in table. Add a phrase whenever Claude gets it wrong.",
+    "default": {
+      "layout": "split",
+      "direction": "right"
+    },
+    "phrases": [
+      {
+        "says": [
+          "split",
+          "horizontal split",
+          "beside"
+        ],
+        "layout": "split",
+        "direction": "right"
+      },
+      {
+        "says": [
+          "vertical split",
+          "below"
+        ],
+        "layout": "split",
+        "direction": "down"
+      },
+      {
+        "says": [
+          "new tab"
+        ],
+        "layout": "tab"
+      },
+      {
+        "says": [
+          "new window"
+        ],
+        "layout": "window"
+      }
+    ]
   }
 }

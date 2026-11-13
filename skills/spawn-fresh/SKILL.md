@@ -45,7 +45,7 @@ built in: `claude --name` (sets the peer name `SendMessage` addresses), `claude 
 | `task` | what the new session should do next | from the conversation; ask if unclear |
 | `name` | peer name for the new session | `<cwd folder, lowercased>-<2–3 word task slug>`, e.g. `multisession-docs-pass` |
 | `dir` | where the new session works | current directory |
-| `layout` | `split` (a new pane beside this one, Konsole's split view) or `tab` | `split` |
+| `layout` | `split` (a new pane beside this one, Konsole's split view) or `tab`. Map the user's words with `vocabulary` in `~/.config/multisession/config.json` first (see `spawn-session`) | `split` |
 | `direction` | for a split: `right` (side by side) or `down` (stacked) | `right` |
 | `close` | close this pane once the new session confirms it read the handover | `yes` |
 

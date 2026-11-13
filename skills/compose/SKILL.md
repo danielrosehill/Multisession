@@ -29,15 +29,22 @@ Scripts are in this plugin's `scripts/`. `spawn-session` says where to find them
 
 **Where things go:**
 
+**The user's own words come first.** If `~/.config/multisession/config.json` has a `vocabulary` key,
+map the request with it before using the table below. It lists `phrases` (what they say → `layout` and
+`direction`) and a `default` for when they say nothing. Users differ, and some call side-by-side panes a
+"horizontal split" or even a "horizontal tab". When a phrase isn't in either list, pick the closest match
+and say in one line which way you went. When the user corrects you, add their phrase to `vocabulary`
+(merge, keep the other keys), so the next session gets it right.
+
 | User says | `--layout` | `--direction` |
 | --- | --- | --- |
 | "split", "beside", "side by side", "to the right", "vertical split", no preference | `split` | `right` |
-| "below", "underneath", "stacked", "horizontal split" | `split` | `down` |
+| "below", "underneath", "stacked" | `split` | `down` |
 | "tab" | `tab` | |
 | "new window", "in a window" | `window` | |
 
-People use "vertical" and "horizontal" split in opposite ways. If the words could mean either and it
-matters, use "beside" or "below" as the guide, and say which way you went.
+People use "vertical" and "horizontal" split in opposite ways, so neither word is in this table. Use the
+user's `vocabulary`. Without it, ask once if it matters, or use `right` and say so.
 
 A folder not named means the directory of the session being started, or the current one.
 
